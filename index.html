@@ -549,21 +549,21 @@
                                     }
                                 } else {
                                     // Normal mode - show dashboard
-                                    if (dashboardContent) {
-                                        dashboardContent.classList.remove('hidden');
-                                        
-                                        // Hide upload section after successful upload
-                                        document.getElementById('uploadSection').classList.add('hidden');
-                                        
-                                        // Show settings button in top right
-                                        document.getElementById('settingsButtonContainer').classList.remove('hidden');
-                                        document.getElementById('settingsBtn').textContent = '⚙️ Settings';
-                                        
-                                        // Refresh the dashboard
-                                        refreshDashboard();
-                                        
-                                        // Show success message
-                                        const finalSecurities = portfolioData.length;
+                                if (dashboardContent) {
+                                    dashboardContent.classList.remove('hidden');
+                                    
+                                    // Hide upload section after successful upload
+                                    document.getElementById('uploadSection').classList.add('hidden');
+                                    
+                                    // Show settings button in top right
+                                    document.getElementById('settingsButtonContainer').classList.remove('hidden');
+                                    document.getElementById('settingsBtn').textContent = '⚙️ Settings';
+                                    
+                                    // Refresh the dashboard
+                                    refreshDashboard();
+                                    
+                                    // Show success message
+                                    const finalSecurities = portfolioData.length;
                                         alert(`Successfully processed ${processedFiles} portfolio files!\n\nTotal securities from all files: ${totalSecurities}\nFinal unique securities: ${finalSecurities}\n\nDashboard shows combined data from all uploaded files.`);
                                     }
                                 }
@@ -592,8 +592,8 @@
                 if (file.name.toLowerCase().endsWith('.csv')) {
                     // Handle CSV files
                     reader.onload = (e) => resolve({ type: 'csv', data: e.target.result });
-                    reader.onerror = (e) => reject(e);
-                    reader.readAsText(file);
+                reader.onerror = (e) => reject(e);
+                reader.readAsText(file);
                 } else if (file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls')) {
                     // Handle Excel files
                     reader.onload = (e) => {
@@ -748,6 +748,14 @@
                         
                         // Only add if we have valid security data
                         if (mappedItem.security && mappedItem.security !== 'Security' && mappedItem.security.toString().length > 0) {
+                            // Check for duplicate securities within this sheet
+                            const existingIndex = data.findIndex(existing => existing.security === mappedItem.security);
+                            if (existingIndex !== -1) {
+                                console.warn(`DUPLICATE SECURITY FOUND in sheet ${sheetName}:`, mappedItem.security);
+                                console.warn(`Existing item:`, data[existingIndex]);
+                                console.warn(`New item:`, mappedItem);
+                            }
+                            
                             // Calculate missing values if possible
                             if (mappedItem.quantity && mappedItem.avgPrice && !mappedItem.totalCost) {
                                 mappedItem.totalCost = mappedItem.quantity * mappedItem.avgPrice;
@@ -768,6 +776,8 @@
                 });
                 
                 console.log(`Total items parsed from Excel: ${data.length}`);
+                console.log(`Number of sheets processed: ${workbook.SheetNames.length}`);
+                console.log(`Sheet names:`, workbook.SheetNames);
                 return data;
             } catch (error) {
                 console.error('Error in parseExcel:', error);
@@ -920,7 +930,7 @@
                 return 0;
             }
         }
-
+        
         // Helper function to parse Indian/Sri Lankan number format
         function parseIndianNumber(numStr) {
             if (numStr === null || numStr === undefined || numStr === '') return 0;
@@ -1687,7 +1697,7 @@
             'UCAR.N0000': 'Basic Materials',
             'TKYO.X0000': 'Basic Materials',
             'TKYO.R0000': 'Basic Materials',
-            'TKYO.N0000': 'Basic Materials',
+            'TKYO.N0000': 'Basic Materials', 
             'SIL.R0000': 'Basic Materials',
             'SIL.N0000': 'Basic Materials',
             'REXP.N0000': 'Basic Materials',
