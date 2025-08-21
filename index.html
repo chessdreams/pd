@@ -417,10 +417,14 @@
                     // Store the files before clearing the input
                     const filesToProcess = Array.from(files);
                     
+                    console.log(`Files to process:`, filesToProcess.map(f => ({ name: f.name, size: f.size, type: f.type })));
+                    
                     // Automatically clear any existing data first to prevent partial data issues
                     allUploadedData = [];
                     portfolioData = [];
                     sectorMapping = {};
+                    
+                    console.log(`Cleared existing data. Starting fresh.`);
                     
                     // Hide dashboard if it was previously shown
                     const dashboardContent = document.getElementById('dashboardContent');
@@ -480,10 +484,20 @@
                                 console.log(`Parsed ${newData.length} items from ${file.name}`);
                                 
                                 if (newData && newData.length > 0) {
+                                    // Check for duplicates before adding
+                                    const existingSecurities = new Set(allUploadedData.map(item => item.security));
+                                    const newSecurities = newData.map(item => item.security);
+                                    const duplicateSecurities = newSecurities.filter(security => existingSecurities.has(security));
+                                    
+                                    if (duplicateSecurities.length > 0) {
+                                        console.warn(`DUPLICATE SECURITIES FOUND in ${file.name}:`, duplicateSecurities);
+                                        console.warn(`This file contains securities that were already processed:`, duplicateSecurities);
+                                    }
+                                    
                                     allUploadedData.push(...newData);
                                     totalSecurities += newData.length;
                                     processedFiles++;
-                                    console.log(`Successfully processed ${file.name}`);
+                                    console.log(`Successfully processed ${file.name}. Total items in allUploadedData: ${allUploadedData.length}`);
                                 } else {
                                     console.warn(`No data parsed from ${file.name}`);
                                 }
@@ -620,10 +634,14 @@
                 return [];
             }
             
+            console.log(`combinePortfolios: Starting with ${allData.length} items`);
+            console.log(`Sample items:`, allData.slice(0, 3));
+            
             const combined = {};
             let processedCount = 0;
             let newSecuritiesCount = 0;
             let aggregatedSecuritiesCount = 0;
+            let duplicateCount = 0;
             
             allData.forEach((item, index) => {
                 processedCount++;
@@ -640,6 +658,11 @@
                     const oldMarketValue = combined[item.security].marketValue;
                     const oldUnrealizedPnL = combined[item.security].unrealizedPnL;
                     
+                    console.log(`Aggregating ${item.security}:`, {
+                        old: { quantity: oldQuantity, totalCost: oldTotalCost, marketValue: oldMarketValue, unrealizedPnL: oldUnrealizedPnL },
+                        new: { quantity: item.quantity, totalCost: item.totalCost, marketValue: item.marketValue, unrealizedPnL: item.unrealizedPnL }
+                    });
+                    
                     combined[item.security].quantity += item.quantity;
                     combined[item.security].totalCost += item.totalCost;
                     combined[item.security].marketValue += item.marketValue;
@@ -651,6 +674,7 @@
                     combined[item.security].returnPercent = (combined[item.security].unrealizedPnL / combined[item.security].totalCost) * 100;
                     
                     aggregatedSecuritiesCount++;
+                    duplicateCount++;
                 } else {
                     // Add new security
                     combined[item.security] = { ...item };
@@ -659,6 +683,16 @@
             });
             
             const result = Object.values(combined);
+            
+            console.log(`combinePortfolios: Final results:`, {
+                totalInput: allData.length,
+                processed: processedCount,
+                newSecurities: newSecuritiesCount,
+                aggregatedSecurities: aggregatedSecuritiesCount,
+                duplicatesFound: duplicateCount,
+                finalSecurities: result.length,
+                sampleResult: result.slice(0, 3)
+            });
             
             return result;
         }
@@ -669,8 +703,8 @@
                 const data = [];
                 console.log('Processing Excel workbook with sheets:', workbook.SheetNames);
                 
-                // Process all sheets in the workbook
-                workbook.SheetNames.forEach(sheetName => {
+                // Only process the first sheet to avoid duplication
+                const sheetName = workbook.SheetNames[0];
                     console.log(`Processing sheet: ${sheetName}`);
                     const worksheet = workbook.Sheets[sheetName];
                     
@@ -746,8 +780,15 @@
                         
                         console.log(`Mapped item:`, mappedItem);
                         
-                        // Only add if we have valid security data
-                        if (mappedItem.security && mappedItem.security !== 'Security' && mappedItem.security.toString().length > 0) {
+                        // Only add if we have valid security data and it's not a summary row
+                        if (mappedItem.security && 
+                            mappedItem.security !== 'Security' && 
+                            mappedItem.security.toString().length > 0 &&
+                            !mappedItem.security.toLowerCase().includes('total') &&
+                            !mappedItem.security.toLowerCase().includes('portfolio') &&
+                            !mappedItem.security.toLowerCase().includes('summary') &&
+                            !mappedItem.security.toLowerCase().includes('grand total')) {
+                            
                             // Check for duplicate securities within this sheet
                             const existingIndex = data.findIndex(existing => existing.security === mappedItem.security);
                             if (existingIndex !== -1) {
@@ -770,14 +811,24 @@
                             data.push(mappedItem);
                             console.log(`Added valid item:`, mappedItem);
                         } else {
-                            console.log(`Skipped invalid item:`, mappedItem);
+                            if (mappedItem.security && mappedItem.security.toString().length > 0) {
+                                if (mappedItem.security.toLowerCase().includes('total') ||
+                                    mappedItem.security.toLowerCase().includes('portfolio') ||
+                                    mappedItem.security.toLowerCase().includes('summary') ||
+                                    mappedItem.security.toLowerCase().includes('grand total')) {
+                                    console.log(`Skipped summary row: "${mappedItem.security}"`);
+                                } else {
+                                    console.log(`Skipped invalid item:`, mappedItem);
+                                }
+                            } else {
+                                console.log(`Skipped invalid item:`, mappedItem);
+                            }
                         }
                     }
-                });
                 
                 console.log(`Total items parsed from Excel: ${data.length}`);
-                console.log(`Number of sheets processed: ${workbook.SheetNames.length}`);
-                console.log(`Sheet names:`, workbook.SheetNames);
+                console.log(`Number of sheets processed: 1 (only first sheet)`);
+                console.log(`Sheet name: ${sheetName}`);
                 return data;
             } catch (error) {
                 console.error('Error in parseExcel:', error);
