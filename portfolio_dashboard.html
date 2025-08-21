@@ -1,0 +1,2217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'success': '#10B981',
+                        'danger': '#EF4444'
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 min-h-screen p-4">
+    <div class="bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 min-h-screen p-4 relative">
+        <!-- Settings Button (Hidden by default, shown after upload) -->
+        <div id="settingsButtonContainer" class="hidden absolute top-4 right-4 z-50">
+            <button id="settingsBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors shadow-lg">
+                ⚙️ Settings
+            </button>
+        </div>
+
+        <!-- Header -->
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center text-white mb-8">
+                <h1 class="text-4xl font-bold mb-2">Portfolio Dashboard</h1>
+                <p class="text-xl opacity-90">Upload and analyze your portfolio data</p>
+            </div>
+
+            <!-- Upload Section (Visible initially) -->
+            <div id="uploadSection" class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-white/20 mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">Upload Portfolio Data</h2>
+                
+                <!-- Comparison Mode Toggle -->
+                <div class="mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <input type="checkbox" id="comparisonMode" class="w-4 h-4 text-blue-600 rounded">
+                        <label for="comparisonMode" class="text-lg font-semibold text-yellow-800">Enable Portfolio Comparison Mode</label>
+                    </div>
+                    <p class="text-yellow-700 text-sm">Check this to compare two portfolio snapshots (e.g., yesterday vs today)</p>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label for="csvFile" class="block text-sm font-medium text-gray-700 mb-2">Select Portfolio Files:</label>
+                        <input type="file" id="csvFile" accept=".csv,.xlsx,.xls" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" multiple>
+                        <p class="text-sm text-gray-500 mt-1">Supports CSV, Excel (.xlsx, .xls) files</p>
+                    </div>
+                    
+                    <div class="flex space-x-4">
+                        <button id="uploadBtn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+                            📤 Upload & Process Files
+                        </button>
+                        <button id="clearDataBtn" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-lg transition-colors hidden">
+                            🗑️ Clear Data
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-semibold text-blue-800 mb-2">Portfolio Comparison Mode:</h4>
+                    <p class="text-blue-700 text-sm mb-2"><strong>How to use comparison mode:</strong></p>
+                    <ol class="text-blue-700 text-sm list-decimal list-inside space-y-1">
+                        <li>Check "Enable Portfolio Comparison Mode"</li>
+                        <li><strong>First upload:</strong> Your initial portfolio (e.g., yesterday's data)</li>
+                        <li><strong>Second upload:</strong> Your new portfolio (e.g., today's data)</li>
+                        <li>Dashboard will show comparison charts and change indicators</li>
+                    </ol>
+                    <p class="text-blue-700 text-sm mt-2"><strong>Multiple CSV Upload:</strong></p>
+                    <ul class="text-blue-700 text-sm list-disc list-inside space-y-1">
+                        <li>Select multiple CSV files using Ctrl+Click (or Cmd+Click on Mac)</li>
+                        <li>All files are processed together</li>
+                        <li>Securities with the same name are automatically aggregated</li>
+                        <li>Dashboard shows only the final combined result</li>
+                    </ul>
+                    <p class="text-blue-700 text-sm mt-2"><strong>Expected File Format:</strong></p>
+                    <ul class="text-blue-700 text-sm list-disc list-inside space-y-1">
+                        <li><strong>Security</strong> - Stock symbol/ticker (e.g., ALUM.N0000)</li>
+                        <li><strong>Quantity</strong> - Number of shares</li>
+                        <li><strong>Avg Price</strong> - Average purchase price</li>
+                        <li><strong>Total Cost</strong> - Total cost basis</li>
+                        <li><strong>Market Value</strong> - Current market value</li>
+                        <li><strong>Unrealized Gain / (Loss)</strong> - Unrealized profit/loss</li>
+                        <li><strong>Unrealized Gain/Loss %</strong> - Return percentage</li>
+                    </ul>
+                    <p class="text-blue-700 text-sm mt-2"><strong>Supported Formats:</strong></p>
+                    <ul class="text-blue-700 text-sm list-disc list-inside space-y-1">
+                        <li><strong>CSV files</strong> - Comma-separated values</li>
+                        <li><strong>Excel files</strong> - .xlsx and .xls formats</li>
+                        <li><strong>Multiple sheets</strong> - Excel files with multiple worksheets are supported</li>
+                    </ul>
+                </div>
+            </div>
+
+        <!-- Dashboard Content (Initially Hidden) -->
+        <div id="dashboardContent" class="hidden">
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-white/20">
+                    <h3 class="text-gray-500 text-sm font-medium">Total Portfolio Value</h3>
+                    <p id="totalMarketValue" class="text-2xl font-bold text-gray-900">Rs. 0</p>
+                </div>
+                <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-white/20">
+                    <h3 class="text-gray-500 text-sm font-medium">Total Cost</h3>
+                    <p id="totalCost" class="text-2xl font-bold text-gray-900">Rs. 0</p>
+                </div>
+                <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-white/20">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Total P&L</h3>
+                    <p id="totalPnL" class="text-2xl font-bold text-success">Rs. 0</p>
+                </div>
+                <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-white/20">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Total Return %</h3>
+                    <p id="totalReturn" class="text-2xl font-bold text-danger">0.00%</p>
+                </div>
+            </div>
+
+            <!-- Comparison Summary Cards (Hidden by default) -->
+            <div id="comparisonCards" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-6 shadow-2xl border border-blue-200">
+                    <h3 class="text-blue-600 text-sm font-medium">Portfolio Value Change</h3>
+                    <p id="valueChange" class="text-2xl font-bold text-blue-900">Rs. 0</p>
+                    <p id="valueChangePercent" class="text-sm text-blue-600">0.00%</p>
+                </div>
+                <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-2xl p-6 shadow-2xl border border-green-200">
+                    <h3 class="text-green-600 text-sm font-medium">P&L Change</h3>
+                    <p id="pnlChange" class="text-2xl font-bold text-green-900">Rs. 0</p>
+                    <p id="pnlChangePercent" class="text-sm text-green-600">0.00%</p>
+                </div>
+                <div class="bg-gradient-to-r from-purple-50 to-purple-100 rounded-2xl p-6 shadow-2xl border border-purple-200">
+                    <h3 class="text-purple-600 text-sm font-medium">New Securities</h3>
+                    <p id="newSecurities" class="text-2xl font-bold text-purple-900">0</p>
+                    <p class="text-sm text-purple-600">Added today</p>
+                </div>
+                <div class="bg-gradient-to-r from-orange-50 to-orange-100 rounded-2xl p-6 shadow-2xl border border-orange-200">
+                    <h3 class="text-orange-600 text-sm font-medium">Removed Securities</h3>
+                    <p id="removedSecurities" class="text-2xl font-bold text-orange-900">0</p>
+                    <p class="text-sm text-orange-600">Sold today</p>
+                </div>
+            </div>
+
+            <!-- Charts Row 1 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-white/20 h-96 relative">
+                    <h3 class="text-center text-gray-700 mb-5 text-xl font-semibold">Portfolio Allocation (Top 10)</h3>
+                    <canvas id="allocationChart" class="max-h-full w-full"></canvas>
+                </div>
+                <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-white/20 h-96 relative">
+                    <h3 class="text-center text-gray-700 mb-5 text-xl font-semibold">Performance by Security (Top 10)</h3>
+                    <canvas id="performanceChart" class="max-h-full w-full"></canvas>
+                </div>
+            </div>
+
+            <!-- Charts Row 2 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-white/20 h-96 relative">
+                    <h3 class="text-center text-gray-700 mb-5 text-xl font-semibold">Sector Market Value Totals</h3>
+                    <canvas id="sectorChart" class="max-h-full w-full"></canvas>
+                </div>
+                <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-white/20 h-96 relative">
+                    <h3 class="text-center text-gray-700 mb-5 text-xl font-semibold">Performance by Sector</h3>
+                    <canvas id="sectorPerformanceChart" class="max-h-full w-full"></canvas>
+                </div>
+            </div>
+
+            <!-- Portfolio Table -->
+            <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-white/20">
+                <h3 class="text-center text-gray-700 mb-5 text-xl font-semibold">Portfolio Details</h3>
+                <div class="overflow-x-auto">
+                    <table id="portfolioTable" class="w-full">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="px-4 py-2 text-center">Rank</th>
+                                <th class="px-4 py-2 text-left">Security</th>
+                                <th class="px-4 py-2 text-right">Quantity</th>
+                                <th class="px-4 py-2 text-right">Avg Price</th>
+                                <th class="px-4 py-2 text-right">Total Cost</th>
+                                <th class="px-4 py-2 text-right">Market Value</th>
+                                <th class="px-4 py-2 text-right">Unrealized P&L</th>
+                                <th class="px-4 py-2 text-right">Return %</th>
+                                <th class="px-4 py-2 text-center">Portfolio %</th>
+                                <th class="px-4 py-2 text-center">Sector</th>
+                            </tr>
+                        </thead>
+                        <tbody id="portfolioTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Comparison Table (Hidden by default) -->
+            <div id="comparisonTable" class="hidden bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-white/20">
+                <h3 class="text-center text-gray-700 mb-5 text-xl font-semibold">Portfolio Comparison - Changes Over Time</h3>
+                <div class="overflow-x-auto">
+                    <table id="comparisonDataTable" class="w-full">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="px-4 py-2 text-center">Security</th>
+                                <th class="px-4 py-2 text-center">Status</th>
+                                <th class="px-4 py-2 text-right">Quantity Change</th>
+                                <th class="px-4 py-2 text-right">Market Value Change</th>
+                                <th class="px-4 py-2 text-right">P&L Change</th>
+                                <th class="px-4 py-2 text-right">Return % Change</th>
+                                <th class="px-4 py-2 text-center">Sector</th>
+                            </tr>
+                        </thead>
+                        <tbody id="comparisonTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let portfolioData = [];
+        let sectorMapping = {};
+        let allUploadedData = [];
+        
+        // Comparison variables
+        let initialPortfolio = null;
+        let comparisonMode = false;
+        let uploadCount = 0;
+
+        // Comparison mode toggle functionality
+        try {
+            const comparisonCheckbox = document.getElementById('comparisonMode');
+            if (comparisonCheckbox) {
+                comparisonCheckbox.addEventListener('change', function() {
+                    comparisonMode = this.checked;
+                    uploadCount = 0;
+                    initialPortfolio = null;
+                    
+                    if (comparisonMode) {
+                        // Reset dashboard when entering comparison mode
+                        const dashboardContent = document.getElementById('dashboardContent');
+                        if (dashboardContent) {
+                            dashboardContent.classList.add('hidden');
+                        }
+                        document.getElementById('uploadSection').classList.remove('hidden');
+                        document.getElementById('settingsButtonContainer').classList.add('hidden');
+                        
+                        // Clear any existing data
+                        portfolioData = [];
+                        allUploadedData = [];
+                        cleanupCharts();
+                        
+                        alert('Comparison mode enabled! Upload your first portfolio (e.g., yesterday) to begin.');
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error setting up comparison mode toggle:', error);
+        }
+
+        // Settings button functionality
+        try {
+            const settingsBtn = document.getElementById('settingsBtn');
+            if (settingsBtn) {
+                settingsBtn.addEventListener('click', function() {
+                    const uploadSection = document.getElementById('uploadSection');
+                    if (uploadSection.classList.contains('hidden')) {
+                        uploadSection.classList.remove('hidden');
+                        this.textContent = '🔒 Hide Settings';
+                    } else {
+                        uploadSection.classList.add('hidden');
+                        this.textContent = '⚙️ Settings';
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error setting up settings button:', error);
+        }
+
+        // Function to refresh dashboard with current combined data
+        function refreshDashboard() {
+            try {
+                // Check if we have data to display
+                if (!portfolioData || portfolioData.length === 0) {
+                    return;
+                }
+                
+                // Check if dashboard is visible
+                const dashboardContent = document.getElementById('dashboardContent');
+                if (!dashboardContent || dashboardContent.classList.contains('hidden')) {
+                    return;
+                }
+                
+                // Clean up all existing charts
+                cleanupCharts();
+                
+                // Clear chart canvases
+                const canvases = ['allocationChart', 'performanceChart', 'sectorChart', 'sectorPerformanceChart'];
+                canvases.forEach(canvasId => {
+                    const canvas = document.getElementById(canvasId);
+                    if (canvas) {
+                        canvas.width = canvas.width;
+                        canvas.height = canvas.height;
+                    }
+                });
+                
+                // Wait a bit for cleanup to complete
+                setTimeout(() => {
+                    // Refresh all dashboard components
+                    calculateSummary();
+                    createAllocationChart();
+                    createPerformanceChart();
+                    createSectorChart();
+                    createSectorPerformanceChart();
+                    populateTable();
+                    
+                    // If in comparison mode, also refresh comparison data
+                    if (comparisonMode && initialPortfolio && portfolioData.length > 0) {
+                        calculateComparisonData(initialPortfolio, portfolioData);
+                    }
+                }, 100);
+                
+            } catch (error) {
+                console.error('Error refreshing dashboard:', error);
+            }
+        }
+
+        // Function to clean up all charts
+        function cleanupCharts() {
+            try {
+                // Destroy all existing Chart.js instances
+                Chart.helpers.each(Chart.instances, (instance) => {
+                    instance.destroy();
+                });
+                
+                // Also try to destroy charts by canvas ID
+                const canvasIds = ['allocationChart', 'performanceChart', 'sectorChart', 'sectorPerformanceChart'];
+                canvasIds.forEach(id => {
+                    const canvas = document.getElementById(id);
+                    if (canvas) {
+                        const chart = Chart.getChart(canvas);
+                        if (chart) {
+                            chart.destroy();
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error cleaning up charts:', error);
+            }
+        }
+
+        // Clear data button functionality
+        try {
+            const clearDataBtn = document.getElementById('clearDataBtn');
+            if (clearDataBtn) {
+                clearDataBtn.addEventListener('click', function() {
+                    if (confirm('Are you sure you want to clear all data and start over?')) {
+                        // Reset everything
+                        portfolioData = [];
+                        allUploadedData = [];
+                        initialPortfolio = null;
+                        uploadCount = 0;
+                        comparisonMode = false;
+                        
+                        // Reset UI
+                        document.getElementById('comparisonMode').checked = false;
+                        document.getElementById('uploadSection').classList.remove('hidden');
+                        document.getElementById('dashboardContent').classList.add('hidden');
+                        document.getElementById('comparisonCards').classList.add('hidden');
+                        document.getElementById('comparisonTable').classList.add('hidden');
+                        document.getElementById('settingsButtonContainer').classList.add('hidden');
+                        this.classList.add('hidden');
+                        
+                        // Clear file input
+                        document.getElementById('csvFile').value = '';
+                        
+                        // Clean up charts and tables
+                        cleanupCharts();
+                        if ($.fn.DataTable.isDataTable('#portfolioTable')) {
+                            $('#portfolioTable').DataTable().destroy();
+                        }
+                        if ($.fn.DataTable.isDataTable('#comparisonDataTable')) {
+                            $('#comparisonDataTable').DataTable().destroy();
+                        }
+                        
+                        alert('All data cleared. You can start fresh.');
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error setting up clear data button:', error);
+        }
+
+        // File upload handling
+        try {
+            const uploadBtn = document.getElementById('uploadBtn');
+            if (uploadBtn) {
+                uploadBtn.addEventListener('click', function() {
+                    const fileInput = document.getElementById('csvFile');
+                    const files = fileInput.files;
+                    
+                    if (!files || files.length === 0) {
+                        alert('Please select one or more CSV files first');
+                        return;
+                    }
+                    
+                    // Store the files before clearing the input
+                    const filesToProcess = Array.from(files);
+                    
+                    // Automatically clear any existing data first to prevent partial data issues
+                    allUploadedData = [];
+                    portfolioData = [];
+                    sectorMapping = {};
+                    
+                    // Hide dashboard if it was previously shown
+                    const dashboardContent = document.getElementById('dashboardContent');
+                    if (dashboardContent) {
+                        dashboardContent.classList.add('hidden');
+                    }
+                    
+                    // Hide settings button if it was previously shown
+                    document.getElementById('settingsButtonContainer').classList.add('hidden');
+                    
+                    // Clear file input AFTER storing the files
+                    document.getElementById('csvFile').value = '';
+                    
+                    // Clear table if it exists
+                    const tableBody = document.getElementById('portfolioTableBody');
+                    if (tableBody) {
+                        tableBody.innerHTML = '';
+                    }
+                    
+                    // Destroy DataTable if it exists
+                    if ($.fn.DataTable.isDataTable('#portfolioTable')) {
+                        $('#portfolioTable').DataTable().destroy();
+                    }
+                    
+                    // Clean up charts
+                    cleanupCharts();
+                    
+                    // Reset summary cards
+                    document.getElementById('totalMarketValue').textContent = 'Rs. 0';
+                    document.getElementById('totalCost').textContent = 'Rs. 0';
+                    document.getElementById('totalPnL').textContent = 'Rs. 0';
+                    document.getElementById('totalReturn').textContent = '0.00%';
+                    
+                    // Process all files
+                    let processedFiles = 0;
+                    let totalSecurities = 0;
+                    
+                    const processFiles = async (fileList) => {
+                        for (let i = 0; i < fileList.length; i++) {
+                            const file = fileList[i];
+                            
+                            try {
+                                console.log(`Processing file: ${file.name} (${file.type})`);
+                                const fileData = await readFileAsync(file);
+                                console.log(`File data type: ${fileData.type}`);
+                                
+                                let newData = [];
+                                
+                                if (fileData.type === 'csv') {
+                                    console.log('Parsing as CSV...');
+                                    newData = parseCSV(fileData.data);
+                                } else if (fileData.type === 'excel') {
+                                    console.log('Parsing as Excel...');
+                                    newData = parseExcel(fileData.data);
+                                }
+                                
+                                console.log(`Parsed ${newData.length} items from ${file.name}`);
+                                
+                                if (newData && newData.length > 0) {
+                                    allUploadedData.push(...newData);
+                                    totalSecurities += newData.length;
+                                    processedFiles++;
+                                    console.log(`Successfully processed ${file.name}`);
+                                } else {
+                                    console.warn(`No data parsed from ${file.name}`);
+                                }
+                            } catch (error) {
+                                console.error(`Error processing ${file.name}:`, error);
+                            }
+                        }
+                        
+                        // All files processed, now combine and display
+                        if (allUploadedData.length > 0) {
+                            try {
+                                // Combine portfolios and aggregate by security
+                                portfolioData = combinePortfolios(allUploadedData);
+                                
+                                // Use default sector mapping
+                                sectorMapping = {...defaultSectorMapping};
+                                
+                                // Add sectors to portfolio data
+                                portfolioData.forEach(item => {
+                                    item.sector = sectorMapping[item.security] || 'Unknown';
+                                });
+                                
+                                if (comparisonMode) {
+                                    // Handle comparison mode
+                                    uploadCount++;
+                                    
+                                    if (uploadCount === 1) {
+                                        // First upload - store as initial portfolio
+                                        initialPortfolio = JSON.parse(JSON.stringify(portfolioData));
+                                        alert(`First portfolio uploaded successfully!\n\nTotal securities: ${portfolioData.length}\n\nNow upload your second portfolio (e.g., today's data) to see the comparison.`);
+                                        
+                                        // Show clear data button
+                                        document.getElementById('clearDataBtn').classList.remove('hidden');
+                                        
+                                        // Clear current data for second upload
+                                        portfolioData = [];
+                                        allUploadedData = [];
+                                        document.getElementById('csvFile').value = '';
+                                        
+                                    } else if (uploadCount === 2) {
+                                        // Second upload - show comparison
+                                        const currentPortfolio = JSON.parse(JSON.stringify(portfolioData));
+                                        
+                                        // Show dashboard with comparison
+                                        if (dashboardContent) {
+                                            dashboardContent.classList.remove('hidden');
+                                            document.getElementById('uploadSection').classList.add('hidden');
+                                            document.getElementById('settingsButtonContainer').classList.remove('hidden');
+                                            document.getElementById('settingsBtn').textContent = '⚙️ Settings';
+                                            
+                                            // Show comparison elements
+                                            document.getElementById('comparisonCards').classList.remove('hidden');
+                                            document.getElementById('comparisonTable').classList.remove('hidden');
+                                            
+                                            // Calculate and display comparison data
+                                            calculateComparisonData(initialPortfolio, currentPortfolio);
+                                            
+                                            // Refresh dashboard with comparison
+                                            refreshDashboard();
+                                            
+                                            alert(`Comparison complete!\n\nInitial portfolio: ${initialPortfolio.length} securities\nCurrent portfolio: ${currentPortfolio.length} securities\n\nDashboard now shows comparison charts and change indicators.`);
+                                        }
+                                    }
+                                } else {
+                                    // Normal mode - show dashboard
+                                    if (dashboardContent) {
+                                        dashboardContent.classList.remove('hidden');
+                                        
+                                        // Hide upload section after successful upload
+                                        document.getElementById('uploadSection').classList.add('hidden');
+                                        
+                                        // Show settings button in top right
+                                        document.getElementById('settingsButtonContainer').classList.remove('hidden');
+                                        document.getElementById('settingsBtn').textContent = '⚙️ Settings';
+                                        
+                                        // Refresh the dashboard
+                                        refreshDashboard();
+                                        
+                                        // Show success message
+                                        const finalSecurities = portfolioData.length;
+                                        alert(`Successfully processed ${processedFiles} portfolio files!\n\nTotal securities from all files: ${totalSecurities}\nFinal unique securities: ${finalSecurities}\n\nDashboard shows combined data from all uploaded files.`);
+                                    }
+                                }
+                            } catch (error) {
+                                console.error('Error in portfolio combination:', error);
+                                alert('Error processing portfolio data: ' + error.message);
+                            }
+                        } else {
+                            alert('No valid data found in any of the selected portfolio files');
+                        }
+                    };
+                    
+                    // Start processing files - pass the stored files array
+                    processFiles(filesToProcess);
+                });
+            }
+        } catch (error) {
+            console.error('Error setting up upload button:', error);
+        }
+        
+        // Helper function to read file asynchronously
+        function readFileAsync(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                
+                if (file.name.toLowerCase().endsWith('.csv')) {
+                    // Handle CSV files
+                    reader.onload = (e) => resolve({ type: 'csv', data: e.target.result });
+                    reader.onerror = (e) => reject(e);
+                    reader.readAsText(file);
+                } else if (file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls')) {
+                    // Handle Excel files
+                    reader.onload = (e) => {
+                        try {
+                            const data = new Uint8Array(e.target.result);
+                            const workbook = XLSX.read(data, { type: 'array' });
+                            resolve({ type: 'excel', data: workbook });
+                        } catch (error) {
+                            reject(new Error('Failed to parse Excel file: ' + error.message));
+                        }
+                    };
+                    reader.onerror = (e) => reject(e);
+                    reader.readAsArrayBuffer(file);
+                } else {
+                    reject(new Error('Unsupported file format. Please use CSV, XLSX, or XLS files.'));
+                }
+            });
+        }
+
+        // Combine portfolios and aggregate by security
+        function combinePortfolios(allData) {
+            if (!Array.isArray(allData)) {
+                console.error('Input data is not an array!');
+                return [];
+            }
+            
+            const combined = {};
+            let processedCount = 0;
+            let newSecuritiesCount = 0;
+            let aggregatedSecuritiesCount = 0;
+            
+            allData.forEach((item, index) => {
+                processedCount++;
+                
+                if (!item.security) {
+                    console.warn(`Item ${index} has no security field:`, item);
+                    return;
+                }
+                
+                if (combined[item.security]) {
+                    // Aggregate existing security
+                    const oldQuantity = combined[item.security].quantity;
+                    const oldTotalCost = combined[item.security].totalCost;
+                    const oldMarketValue = combined[item.security].marketValue;
+                    const oldUnrealizedPnL = combined[item.security].unrealizedPnL;
+                    
+                    combined[item.security].quantity += item.quantity;
+                    combined[item.security].totalCost += item.totalCost;
+                    combined[item.security].marketValue += item.marketValue;
+                    combined[item.security].unrealizedPnL += item.unrealizedPnL;
+                    
+                    // Recalculate average price
+                    combined[item.security].avgPrice = combined[item.security].totalCost / combined[item.security].quantity;
+                    // Recalculate return percentage
+                    combined[item.security].returnPercent = (combined[item.security].unrealizedPnL / combined[item.security].totalCost) * 100;
+                    
+                    aggregatedSecuritiesCount++;
+                } else {
+                    // Add new security
+                    combined[item.security] = { ...item };
+                    newSecuritiesCount++;
+                }
+            });
+            
+            const result = Object.values(combined);
+            
+            return result;
+        }
+
+        // Excel Parser
+        function parseExcel(workbook) {
+            try {
+                const data = [];
+                console.log('Processing Excel workbook with sheets:', workbook.SheetNames);
+                
+                // Process all sheets in the workbook
+                workbook.SheetNames.forEach(sheetName => {
+                    console.log(`Processing sheet: ${sheetName}`);
+                    const worksheet = workbook.Sheets[sheetName];
+                    
+                    // Try different parsing approaches
+                    let jsonData = [];
+                    try {
+                        // First try: with headers
+                        jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    } catch (e) {
+                        console.log('Header parsing failed, trying without headers...');
+                        try {
+                            jsonData = XLSX.utils.sheet_to_json(worksheet);
+                        } catch (e2) {
+                            console.log('JSON parsing failed, trying raw data...');
+                            jsonData = XLSX.utils.sheet_to_json(worksheet, { raw: true, header: 1 });
+                        }
+                    }
+                    
+                    console.log(`Sheet ${sheetName} has ${jsonData.length} rows`);
+                    if (jsonData.length > 0) {
+                        console.log('Sample row data:', jsonData[0]);
+                    }
+                    
+                    if (jsonData.length === 0) return;
+                    
+                    // Find the header row
+                    let headerRowIndex = 0;
+                    for (let i = 0; i < Math.min(10, jsonData.length); i++) {
+                        const row = jsonData[i];
+                        if (row && row.some(cell => cell && cell.toString().includes('Security'))) {
+                            headerRowIndex = i;
+                            break;
+                        }
+                    }
+                    
+                    console.log(`Header row found at index: ${headerRowIndex}`);
+                    const headers = jsonData[headerRowIndex] || [];
+                    console.log('Headers found:', headers);
+                    
+                    // Process data rows
+                    for (let i = headerRowIndex + 1; i < jsonData.length; i++) {
+                        const row = jsonData[i];
+                        if (!row || row.length === 0) continue;
+                        
+                        const item = {};
+                        headers.forEach((header, index) => {
+                            if (header && row[index] !== undefined) {
+                                item[header] = row[index];
+                            }
+                        });
+                        
+                        console.log(`Processing row ${i}:`, item);
+                        console.log(`Row data types:`, {
+                            Security: { value: item['Security'], type: typeof item['Security'] },
+                            Quantity: { value: item['Quantity'], type: typeof item['Quantity'] },
+                            'Avg Price': { value: item['Avg Price'], type: typeof item['Avg Price'] },
+                            'Total Cost': { value: item['Total Cost'], type: typeof item['Total Cost'] },
+                            'Market Value': { value: item['Market Value'], type: typeof item['Market Value'] },
+                            'Unrealized Gain / (Loss)': { value: item['Unrealized Gain / (Loss)'], type: typeof item['Unrealized Gain / (Loss)'] },
+                            'Unrealized Gain/Loss %': { value: item['Unrealized Gain/Loss %'], type: typeof item['Unrealized Gain/Loss %'] }
+                        });
+                        
+                        // Map the specific columns from your Excel format - using exact headers
+                        const mappedItem = {
+                            security: item['Security'] || '',
+                            quantity: safeParseNumber(item['Quantity'] || 0),
+                            avgPrice: safeParseNumber(item['Avg Price'] || 0),
+                            totalCost: safeParseNumber(item['Total Cost'] || 0),
+                            marketValue: safeParseNumber(item['Market Value'] || 0),
+                            unrealizedPnL: safeParseNumber(item['Unrealized Gain / (Loss)'] || 0),
+                            returnPercent: safeParseNumber(item['Unrealized Gain/Loss %'] || 0)
+                        };
+                        
+                        console.log(`Mapped item:`, mappedItem);
+                        
+                        // Only add if we have valid security data
+                        if (mappedItem.security && mappedItem.security !== 'Security' && mappedItem.security.toString().length > 0) {
+                            // Calculate missing values if possible
+                            if (mappedItem.quantity && mappedItem.avgPrice && !mappedItem.totalCost) {
+                                mappedItem.totalCost = mappedItem.quantity * mappedItem.avgPrice;
+                            }
+                            if (mappedItem.totalCost && mappedItem.marketValue && !mappedItem.unrealizedPnL) {
+                                mappedItem.unrealizedPnL = mappedItem.marketValue - mappedItem.totalCost;
+                            }
+                            if (mappedItem.totalCost && mappedItem.unrealizedPnL && !mappedItem.returnPercent) {
+                                mappedItem.returnPercent = (mappedItem.unrealizedPnL / mappedItem.totalCost) * 100;
+                            }
+                            
+                            data.push(mappedItem);
+                            console.log(`Added valid item:`, mappedItem);
+                        } else {
+                            console.log(`Skipped invalid item:`, mappedItem);
+                        }
+                    }
+                });
+                
+                console.log(`Total items parsed from Excel: ${data.length}`);
+                return data;
+            } catch (error) {
+                console.error('Error in parseExcel:', error);
+                return [];
+            }
+        }
+
+        // CSV Parser
+        function parseCSV(csvText) {
+            try {
+                const lines = csvText.split('\n');
+                
+                // Find the line with actual headers (skip portfolio title lines)
+                let headerLineIndex = 0;
+                for (let i = 0; i < lines.length; i++) {
+                    if (lines[i].includes('Security') && lines[i].includes('Quantity')) {
+                        headerLineIndex = i;
+                        break;
+                    }
+                }
+                
+                if (headerLineIndex === 0) {
+                    // Try to find any line that might contain headers
+                    for (let i = 0; i < Math.min(10, lines.length); i++) {
+                        if (lines[i].includes('Security')) {
+                            headerLineIndex = i;
+                            break;
+                        }
+                    }
+                }
+                
+                const headers = parseCSVLine(lines[headerLineIndex]);
+                
+                const data = [];
+                for (let i = headerLineIndex + 1; i < lines.length; i++) {
+                    if (lines[i].trim() && !lines[i].includes('Total') && !lines[i].includes('Portfolio')) {
+                        const values = parseCSVLine(lines[i]);
+                        const item = {};
+                        
+                        headers.forEach((header, index) => {
+                            if (values[index]) {
+                                item[header] = values[index];
+                            }
+                        });
+                        
+                        // Map the specific columns from your CSV format - using exact headers
+                        const mappedItem = {
+                            security: item['Security'] || '',
+                            quantity: safeParseNumber(item['Quantity'] || '0'),
+                            avgPrice: safeParseNumber(item['Avg Price'] || '0'),
+                            totalCost: safeParseNumber(item['Total Cost'] || '0'),
+                            marketValue: safeParseNumber(item['Market Value'] || '0'),
+                            unrealizedPnL: safeParseNumber(item['Unrealized Gain / (Loss)'] || '0'),
+                            returnPercent: safeParseNumber(item['Unrealized Gain/Loss %'] || '0')
+                        };
+                        
+                        // Only add if we have valid security data
+                        if (mappedItem.security && mappedItem.security !== 'Security' && mappedItem.security.length > 0) {
+                            // Calculate missing values if possible
+                            if (mappedItem.quantity && mappedItem.avgPrice && !mappedItem.totalCost) {
+                                mappedItem.totalCost = mappedItem.quantity * mappedItem.avgPrice;
+                            }
+                            if (mappedItem.totalCost && mappedItem.marketValue && !mappedItem.unrealizedPnL) {
+                                mappedItem.unrealizedPnL = mappedItem.marketValue - mappedItem.totalCost;
+                            }
+                            if (mappedItem.totalCost && mappedItem.unrealizedPnL && !mappedItem.returnPercent) {
+                                mappedItem.returnPercent = (mappedItem.unrealizedPnL / mappedItem.totalCost) * 100;
+                            }
+                            
+                            data.push(mappedItem);
+                        }
+                    }
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('Error in parseCSV:', error);
+                return [];
+            }
+        }
+        
+        // Helper function to properly parse CSV lines with quoted values
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            // Add the last field
+            result.push(current.trim());
+            
+            // Remove quotes from each field
+            return result.map(field => field.replace(/^"|"$/g, ''));
+        }
+        
+        // Safe number parsing function that handles all edge cases
+        function safeParseNumber(value) {
+            try {
+                // Handle null, undefined, empty strings
+                if (value === null || value === undefined || value === '') {
+                    return 0;
+                }
+                
+                // If it's already a number, return it
+                if (typeof value === 'number') {
+                    return isNaN(value) ? 0 : value;
+                }
+                
+                // Convert to string
+                let str = String(value);
+                
+                // Handle zero values
+                if (str === '0' || str === '0.00' || str === '0.0' || str === '0.000') {
+                    return 0;
+                }
+                
+                // Remove all commas and spaces
+                let cleanStr = str.replace(/[, ]/g, '');
+                
+                // Handle negative numbers
+                const isNegative = cleanStr.startsWith('-');
+                if (isNegative) {
+                    cleanStr = cleanStr.substring(1);
+                }
+                
+                // Parse the number
+                const result = parseFloat(cleanStr);
+                
+                // Check if parsing was successful
+                if (isNaN(result)) {
+                    console.warn('Failed to parse number:', value, 'Type:', typeof value);
+                    return 0;
+                }
+                
+                return isNegative ? -result : result;
+            } catch (error) {
+                console.error('Error in safeParseNumber:', error, 'Value:', value, 'Type:', typeof value);
+                return 0;
+            }
+        }
+
+        // Helper function to parse Indian/Sri Lankan number format
+        function parseIndianNumber(numStr) {
+            if (numStr === null || numStr === undefined || numStr === '') return 0;
+            
+            // Convert to string if it's a number
+            let str = String(numStr);
+            
+            // Handle zero values
+            if (str === '0' || str === '0.00' || str === '0.0') return 0;
+            
+            // Remove all commas first
+            let cleanStr = str.replace(/,/g, '');
+            
+            // Handle negative numbers
+            const isNegative = cleanStr.startsWith('-');
+            if (isNegative) {
+                cleanStr = cleanStr.substring(1);
+            }
+            
+            // Parse the number
+            const result = parseFloat(cleanStr);
+            
+            // Check if parsing was successful
+            if (isNaN(result)) {
+                console.warn('Failed to parse number:', numStr);
+                return 0;
+            }
+            
+            return isNegative ? -result : result;
+        }
+        
+        // Helper function to format numbers with standard thousand separators
+        function formatNumber(num) {
+            if (num === null || num === undefined || isNaN(num)) return '0.00';
+            
+            const isNegative = num < 0;
+            const absNum = Math.abs(num);
+            
+            // Format with standard thousand separators
+            if (absNum >= 1000000) {
+                return (isNegative ? '-' : '') + (absNum / 1000000).toFixed(2) + 'M';
+            } else if (absNum >= 1000) {
+                return (isNegative ? '-' : '') + absNum.toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            } else {
+                return (isNegative ? '-' : '') + absNum.toFixed(2);
+            }
+        }
+
+        // Calculate comparison data between two portfolios
+        function calculateComparisonData(initial, current) {
+            try {
+                // Create maps for easy lookup
+                const initialMap = new Map();
+                const currentMap = new Map();
+                
+                initial.forEach(item => initialMap.set(item.security, item));
+                current.forEach(item => currentMap.set(item.security, item));
+                
+                // Calculate summary changes
+                const initialTotalValue = initial.reduce((sum, item) => sum + (item.marketValue || 0), 0);
+                const currentTotalValue = current.reduce((sum, item) => sum + (item.marketValue || 0), 0);
+                const initialTotalPnL = initial.reduce((sum, item) => sum + (item.unrealizedPnL || 0), 0);
+                const currentTotalPnL = current.reduce((sum, item) => sum + (item.unrealizedPnL || 0), 0);
+                
+                const valueChange = currentTotalValue - initialTotalValue;
+                const valueChangePercent = initialTotalValue > 0 ? (valueChange / initialTotalValue) * 100 : 0;
+                const pnlChange = currentTotalPnL - initialTotalPnL;
+                const pnlChangePercent = initialTotalPnL !== 0 ? (pnlChange / Math.abs(initialTotalPnL)) * 100 : 0;
+                
+                // Count new and removed securities
+                let newSecurities = 0;
+                let removedSecurities = 0;
+                
+                current.forEach(item => {
+                    if (!initialMap.has(item.security)) {
+                        newSecurities++;
+                    }
+                });
+                
+                // Count removed securities (not in current portfolio OR sold completely)
+                initial.forEach(item => {
+                    if (!currentMap.has(item.security)) {
+                        removedSecurities++;
+                    } else {
+                        // Check if sold completely (quantity <= 0)
+                        const currentItem = currentMap.get(item.security);
+                        if (currentItem && currentItem.quantity <= 0) {
+                            removedSecurities++;
+                        }
+                    }
+                });
+                
+                // Update comparison cards
+                document.getElementById('valueChange').textContent = 'Rs. ' + formatNumber(valueChange);
+                document.getElementById('valueChangePercent').textContent = valueChangePercent.toFixed(2) + '%';
+                document.getElementById('pnlChange').textContent = 'Rs. ' + formatNumber(pnlChange);
+                document.getElementById('pnlChangePercent').textContent = pnlChangePercent.toFixed(2) + '%';
+                document.getElementById('newSecurities').textContent = newSecurities;
+                document.getElementById('removedSecurities').textContent = removedSecurities;
+                
+                // Update colors based on changes
+                const valueChangeElement = document.getElementById('valueChange');
+                const valueChangePercentElement = document.getElementById('valueChangePercent');
+                const pnlChangeElement = document.getElementById('pnlChange');
+                const pnlChangePercentElement = document.getElementById('pnlChangePercent');
+                
+                valueChangeElement.className = valueChange >= 0 ? 'text-2xl font-bold text-blue-900' : 'text-2xl font-bold text-red-900';
+                valueChangePercentElement.className = valueChange >= 0 ? 'text-sm text-blue-600' : 'text-sm text-red-600';
+                pnlChangeElement.className = pnlChange >= 0 ? 'text-2xl font-bold text-green-900' : 'text-2xl font-bold text-red-900';
+                pnlChangePercentElement.className = pnlChange >= 0 ? 'text-sm text-green-600' : 'text-sm text-red-600';
+                
+                // Populate comparison table
+                populateComparisonTable(initial, current);
+                
+            } catch (error) {
+                console.error('Error calculating comparison data:', error);
+            }
+        }
+
+        // Populate comparison table
+        function populateComparisonTable(initial, current) {
+            try {
+                const tableBody = document.getElementById('comparisonTableBody');
+                if (!tableBody) return;
+                
+                // Clear existing content
+                tableBody.innerHTML = '';
+                
+                // Create maps for easy lookup
+                const initialMap = new Map();
+                const currentMap = new Map();
+                
+                initial.forEach(item => initialMap.set(item.security, item));
+                current.forEach(item => currentMap.set(item.security, item));
+                
+                // Get all unique securities
+                const allSecurities = new Set([...initial.map(item => item.security), ...current.map(item => item.security)]);
+                const comparisonData = [];
+                
+                allSecurities.forEach(security => {
+                    const initialItem = initialMap.get(security);
+                    const currentItem = currentMap.get(security);
+                    
+                    let status = 'Unchanged';
+                    let quantityChange = 0;
+                    let marketValueChange = 0;
+                    let pnlChange = 0;
+                    let returnChange = 0;
+                    let sector = 'Unknown';
+                    
+                    if (initialItem && currentItem) {
+                        // Security exists in both portfolios
+                        quantityChange = (currentItem.quantity || 0) - (initialItem.quantity || 0);
+                        marketValueChange = (currentItem.marketValue || 0) - (initialItem.marketValue || 0);
+                        pnlChange = (currentItem.unrealizedPnL || 0) - (initialItem.unrealizedPnL || 0);
+                        returnChange = (currentItem.returnPercent || 0) - (initialItem.returnPercent || 0);
+                        sector = currentItem.sector || 'Unknown';
+                        
+                        // Determine if this should be marked as removed (sold completely)
+                        if (currentItem.quantity <= 0) {
+                            status = 'Removed';
+                        } else if (quantityChange !== 0 || marketValueChange !== 0 || pnlChange !== 0) {
+                            status = 'Modified';
+                        } else {
+                            status = 'Unchanged';
+                        }
+                    } else if (currentItem) {
+                        // New security
+                        status = 'Added';
+                        quantityChange = currentItem.quantity || 0;
+                        marketValueChange = currentItem.marketValue || 0;
+                        pnlChange = currentItem.unrealizedPnL || 0;
+                        returnChange = currentItem.returnPercent || 0;
+                        sector = currentItem.sector || 'Unknown';
+                    } else if (initialItem) {
+                        // Removed security (not in current portfolio)
+                        status = 'Removed';
+                        quantityChange = -(initialItem.quantity || 0);
+                        marketValueChange = -(initialItem.marketValue || 0);
+                        pnlChange = -(initialItem.unrealizedPnL || 0);
+                        returnChange = -(initialItem.returnPercent || 0);
+                        sector = initialItem.sector || 'Unknown';
+                    }
+                    
+                    comparisonData.push({
+                        security,
+                        status,
+                        quantityChange,
+                        marketValueChange,
+                        pnlChange,
+                        returnChange,
+                        sector
+                    });
+                });
+                
+                // Sort by absolute market value change
+                comparisonData.sort((a, b) => Math.abs(b.marketValueChange) - Math.abs(a.marketValueChange));
+                
+                // Create table rows
+                comparisonData.forEach(item => {
+                    const row = document.createElement('tr');
+                    
+                    // Determine status color
+                    let statusColor = 'text-gray-600';
+                    if (item.status === 'Added') statusColor = 'text-green-600';
+                    else if (item.status === 'Removed') statusColor = 'text-red-600';
+                    else if (item.status === 'Modified') statusColor = 'text-blue-600';
+                    
+                    row.innerHTML = `
+                        <td class="px-4 py-2 font-medium">${item.security}</td>
+                        <td class="px-4 py-2 text-center ${statusColor} font-semibold">${item.status}</td>
+                        <td class="px-4 py-2 text-right ${item.quantityChange >= 0 ? 'text-green-600' : 'text-red-600'}" data-order="${item.quantityChange}">
+                            ${item.quantityChange >= 0 ? '+' : ''}${item.quantityChange.toLocaleString('en-US')}
+                        </td>
+                        <td class="px-4 py-2 text-right ${item.marketValueChange >= 0 ? 'text-green-600' : 'text-red-600'}" data-order="${item.marketValueChange}">
+                            ${item.marketValueChange >= 0 ? '+' : ''}Rs. ${formatNumber(item.marketValueChange)}
+                        </td>
+                        <td class="px-4 py-2 text-right ${item.pnlChange >= 0 ? 'text-green-600' : 'text-red-600'}" data-order="${item.pnlChange}">
+                            ${item.pnlChange >= 0 ? '+' : ''}Rs. ${formatNumber(item.pnlChange)}
+                        </td>
+                        <td class="px-4 py-2 text-right ${item.returnChange >= 0 ? 'text-green-600' : 'text-red-600'}" data-order="${item.returnChange}">
+                            ${item.returnChange >= 0 ? '+' : ''}${item.returnChange.toFixed(2)}%
+                        </td>
+                        <td class="px-4 py-2 text-center">${item.sector}</td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+                
+                // Initialize DataTable
+                if ($.fn.DataTable.isDataTable('#comparisonDataTable')) {
+                    $('#comparisonDataTable').DataTable().destroy();
+                }
+                
+                $('#comparisonDataTable').DataTable({
+                    pageLength: 50,
+                    order: [[3, 'desc']], // Sort by market value change by default
+                    responsive: true,
+                    processing: false,
+                    searching: true,
+                    ordering: true,
+                    info: true,
+                    paging: true
+                });
+                
+            } catch (error) {
+                console.error('Error populating comparison table:', error);
+            }
+        }
+
+        // Calculate summary statistics
+        function calculateSummary() {
+            const totalValue = portfolioData.reduce((sum, item) => sum + (item.marketValue || 0), 0);
+            const totalCost = portfolioData.reduce((sum, item) => sum + (item.totalCost || 0), 0);
+            const totalPnL = totalValue - totalCost;
+            const totalReturn = totalCost > 0 ? (totalPnL / totalCost) * 100 : 0;
+
+            document.getElementById('totalMarketValue').textContent = 'Rs. ' + formatNumber(totalValue);
+            document.getElementById('totalCost').textContent = 'Rs. ' + formatNumber(totalCost);
+            document.getElementById('totalPnL').textContent = 'Rs. ' + formatNumber(totalPnL);
+            document.getElementById('totalReturn').textContent = totalReturn.toFixed(2) + '%';
+
+            // Update colors based on P&L
+            const pnlElement = document.getElementById('totalPnL');
+            const returnElement = document.getElementById('totalReturn');
+            
+            pnlElement.className = totalPnL >= 0 ? 'text-2xl font-bold text-success' : 'text-2xl font-bold text-danger';
+            returnElement.className = totalReturn >= 0 ? 'text-2xl font-bold text-success' : 'text-2xl font-bold text-danger';
+        }
+
+        // Create allocation chart
+        function createAllocationChart(dataToUse = portfolioData) {
+            try {
+                const canvas = document.getElementById('allocationChart');
+                if (!canvas) {
+                    return;
+                }
+                
+                // Check if there's already a chart on this canvas and destroy it
+                const existingChart = Chart.getChart(canvas);
+                if (existingChart) {
+                    existingChart.destroy();
+                }
+                
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    return;
+                }
+                
+                // Sort by market value
+                const sortedData = [...dataToUse].sort((a, b) => (b.marketValue || 0) - (a.marketValue || 0));
+                const top10 = sortedData.slice(0, 10);
+                
+                window.allocationChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: top10.map(item => item.security),
+                        datasets: [{
+                            data: top10.map(item => item.marketValue || 0),
+                            backgroundColor: [
+                                '#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6',
+                                '#06B6D4', '#84CC16', '#F97316', '#EC4899', '#6366F1'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true,
+                                    generateLabels: function(chart) {
+                                        const data = chart.data;
+                                        if (data.labels.length && data.datasets.length) {
+                                            return data.labels.map((label, i) => {
+                                                const value = data.datasets[0].data[i];
+                                                const percentage = ((value / dataToUse.reduce((sum, item) => sum + (item.marketValue || 0), 0)) * 100).toFixed(1);
+                                                return {
+                                                    text: `${label}: ${percentage}%`,
+                                                    fillStyle: data.datasets[0].backgroundColor[i],
+                                                    strokeStyle: data.datasets[0].backgroundColor[i],
+                                                    pointStyle: 'circle',
+                                                    hidden: false,
+                                                    index: i
+                                                };
+                                            });
+                                        }
+                                        return [];
+                                    }
+                                }
+                            },
+                            datalabels: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error creating allocation chart:', error);
+            }
+        }
+
+        // Create performance chart
+        function createPerformanceChart(dataToUse = portfolioData) {
+            try {
+                const canvas = document.getElementById('performanceChart');
+                if (!canvas) {
+                    return;
+                }
+                
+                // Check if there's already a chart on this canvas and destroy it
+                const existingChart = Chart.getChart(canvas);
+                if (existingChart) {
+                    existingChart.destroy();
+                }
+                
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    return;
+                }
+                
+                // Sort by absolute P&L
+                const sortedData = [...portfolioData].sort((a, b) => Math.abs(b.unrealizedPnL || 0) - Math.abs(a.unrealizedPnL || 0));
+                const top15 = sortedData.slice(0, 15);
+                
+                window.performanceChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: top15.map(item => item.security),
+                        datasets: [{
+                            label: 'Unrealized P&L (Rs.)',
+                            data: top15.map(item => item.unrealizedPnL || 0),
+                            backgroundColor: top15.map(item => (item.unrealizedPnL || 0) >= 0 ? '#10B981' : '#EF4444')
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return 'Rs. ' + (value / 1000).toFixed(0) + 'K';
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const item = top15[context.dataIndex];
+                                        return [
+                                            `P&L: Rs. ${formatNumber(item.unrealizedPnL || 0)}`,
+                                            `Return: ${(item.returnPercent || 0).toFixed(2)}%`
+                                        ];
+                                    }
+                                }
+                            },
+                            datalabels: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error creating performance chart:', error);
+            }
+        }
+
+        // Create sector chart
+        function createSectorChart(dataToUse = portfolioData) {
+            try {
+                const canvas = document.getElementById('sectorChart');
+                if (!canvas) {
+                    return;
+                }
+                
+                // Check if there's already a chart on this canvas and destroy it
+                const existingChart = Chart.getChart(canvas);
+                if (existingChart) {
+                    existingChart.destroy();
+                }
+                
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    return;
+                }
+                
+                // Group by sector and sum market values, filtering out "Unknown" sectors
+                const sectorData = {};
+                dataToUse.forEach(item => {
+                    const sector = item.sector;
+                    if (sector && sector !== 'Unknown') {
+                        if (!sectorData[sector]) {
+                            sectorData[sector] = 0;
+                        }
+                        sectorData[sector] += (item.marketValue || 0);
+                    }
+                });
+                
+                // Only create chart if we have valid sector data
+                if (Object.keys(sectorData).length === 0) {
+                    return;
+                }
+                
+                // Sort sectors by market value
+                const sortedSectors = Object.entries(sectorData)
+                    .sort(([,a], [,b]) => b - a)
+                    .slice(0, 8); // Top 8 sectors
+                
+                const labels = sortedSectors.map(([sector]) => sector);
+                const data = sortedSectors.map(([, value]) => value);
+                
+                window.sectorChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: [
+                                '#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6',
+                                '#06B6D4', '#84CC16', '#F97316'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Sector Market Value Totals',
+                                font: {
+                                    size: 16
+                                }
+                            },
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true,
+                                    generateLabels: function(chart) {
+                                        const data = chart.data;
+                                        if (data.labels.length && data.datasets.length) {
+                                            return data.labels.map((label, i) => {
+                                                const value = data.datasets[0].data[i];
+                                                const percentage = ((value / dataToUse.reduce((sum, item) => sum + (item.marketValue || 0), 0)) * 100).toFixed(1);
+                                                return {
+                                                    text: `${label}: ${percentage}%`,
+                                                    fillStyle: data.datasets[0].backgroundColor[i],
+                                                    strokeStyle: data.datasets[0].backgroundColor[i],
+                                                    pointStyle: 'circle',
+                                                    hidden: false,
+                                                    index: i
+                                                };
+                                            });
+                                        }
+                                        return [];
+                                    }
+                                }
+                            },
+                            datalabels: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error creating sector chart:', error);
+            }
+        }
+
+        // Create sector performance chart
+        function createSectorPerformanceChart(dataToUse = portfolioData) {
+            try {
+                const canvas = document.getElementById('sectorPerformanceChart');
+                if (!canvas) {
+                    return;
+                }
+                
+                // Check if there's already a chart on this canvas and destroy it
+                const existingChart = Chart.getChart(canvas);
+                if (existingChart) {
+                    existingChart.destroy();
+                }
+                
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    return;
+                }
+                
+                // Group by sector and calculate total P&L, filtering out "Unknown" sectors
+                const sectorData = {};
+                dataToUse.forEach(item => {
+                    const sector = item.sector;
+                    if (sector && sector !== 'Unknown') {
+                        if (!sectorData[sector]) {
+                            sectorData[sector] = 0;
+                        }
+                        sectorData[sector] += (item.unrealizedPnL || 0);
+                    }
+                });
+                
+                // Only create chart if we have valid sector data
+                if (Object.keys(sectorData).length === 0) {
+                    return;
+                }
+                
+                // Sort sectors by P&L value
+                const sortedSectors = Object.entries(sectorData)
+                    .sort(([,a], [,b]) => Math.abs(b) - Math.abs(a))
+                    .slice(0, 10); // Top 10 sectors
+                
+                const labels = sortedSectors.map(([sector]) => sector);
+                const data = sortedSectors.map(([, pnl]) => pnl);
+                
+                window.sectorPerformanceChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Sector P&L',
+                            data: data,
+                            backgroundColor: data.map(value => value >= 0 ? '#10B981' : '#EF4444'),
+                            borderColor: data.map(value => value >= 0 ? '#059669' : '#DC2626'),
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Performance by Sector',
+                                font: {
+                                    size: 16
+                                }
+                            },
+                            legend: {
+                                display: false
+                            },
+                            datalabels: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return 'Rs. ' + (value / 1000).toFixed(0) + 'K';
+                                    }
+                                }
+                            }
+                        },
+                        tooltips: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'P&L: Rs. ' + formatNumber(context.parsed.y);
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error creating sector performance chart:', error);
+            }
+        }
+
+        // Populate portfolio table
+        function populateTable() {
+            try {
+                if (!portfolioData || portfolioData.length === 0) {
+                    return;
+                }
+                
+                // Filter out stocks with 0 quantity
+                const validData = portfolioData.filter(item => (item.quantity || 0) > 0);
+                
+                if (validData.length === 0) {
+                    return;
+                }
+                
+                const tableBody = document.getElementById('portfolioTableBody');
+                if (!tableBody) {
+                    return;
+                }
+                
+                // Clear existing table content
+                tableBody.innerHTML = '';
+                
+                // Calculate rank and portfolio percentage
+                const sortedData = [...validData].sort((a, b) => (b.marketValue || 0) - (a.marketValue || 0));
+                const totalValue = validData.reduce((sum, item) => sum + (item.marketValue || 0), 0);
+                
+                // Create table rows
+                sortedData.forEach((item, index) => {
+                    const row = document.createElement('tr');
+                    const portfolioPercentage = totalValue > 0 ? (item.marketValue / totalValue) * 100 : 0;
+                    const rank = index + 1;
+                    
+                    // Ensure all numeric values are valid numbers
+                    const quantity = item.quantity || 0;
+                    const avgPrice = item.avgPrice || 0;
+                    const totalCost = item.totalCost || 0;
+                    const marketValue = item.marketValue || 0;
+                    const unrealizedPnL = item.unrealizedPnL || 0;
+                    const returnPercent = item.returnPercent || 0;
+                    
+                    row.innerHTML = `
+                        <td class="px-4 py-2 text-center" data-order="${rank}">${rank}</td>
+                        <td class="px-4 py-2 font-medium">${item.security}</td>
+                        <td class="px-4 py-2 text-right" data-order="${quantity}">${quantity.toLocaleString('en-US')}</td>
+                        <td class="px-4 py-2 text-right" data-order="${avgPrice}">Rs. ${avgPrice.toFixed(2)}</td>
+                        <td class="px-4 py-2 text-right" data-order="${totalCost}">Rs. ${formatNumber(totalCost)}</td>
+                        <td class="px-4 py-2 text-right" data-order="${marketValue}">Rs. ${formatNumber(marketValue)}</td>
+                        <td class="px-4 py-2 text-right ${unrealizedPnL >= 0 ? 'text-success' : 'text-danger'}" data-order="${unrealizedPnL}">
+                            Rs. ${formatNumber(unrealizedPnL)}
+                        </td>
+                        <td class="px-4 py-2 text-right ${returnPercent >= 0 ? 'text-success' : 'text-danger'}" data-order="${returnPercent}">${returnPercent.toFixed(2)}%</td>
+                        <td class="px-4 py-2 text-center" data-order="${portfolioPercentage}">${portfolioPercentage.toFixed(2)}%</td>
+                        <td class="px-4 py-2 text-center">${item.sector}</td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+                
+                // Destroy existing DataTable if it exists
+                if ($.fn.DataTable.isDataTable('#portfolioTable')) {
+                    $('#portfolioTable').DataTable().destroy();
+                }
+                
+                // Initialize new DataTable
+                $('#portfolioTable').DataTable({
+                    pageLength: 50,
+                    order: [[0, 'asc']],
+                    responsive: true,
+                    processing: false,
+                    searching: true,
+                    ordering: true,
+                    info: true,
+                    paging: true
+                });
+                
+            } catch (error) {
+                console.error('Error in populateTable:', error);
+            }
+        }
+
+        // Initialize dashboard
+        function initDashboard() {
+            try {
+                // Check if dashboard is visible
+                const dashboardContent = document.getElementById('dashboardContent');
+                if (!dashboardContent || dashboardContent.classList.contains('hidden')) {
+                    return;
+                }
+                
+                calculateSummary();
+                createAllocationChart();
+                createPerformanceChart();
+                createSectorChart();
+                createSectorPerformanceChart();
+                populateTable();
+            } catch (error) {
+                console.error('Error in initDashboard:', error);
+            }
+        }
+
+        // Default sector mapping for known securities
+        const defaultSectorMapping = {
+            // Automobiles
+            'TYRE.N0000': 'Automobiles',
+            
+            // Banks
+            'SDB.N0000': 'Banks',
+            'COMB.N0000': 'Banks',
+            'PABC.N0000': 'Banks',
+            'HNB.N0000': 'Banks',
+            'HNB.X0000': 'Banks',
+            'DFCC.N0000': 'Banks',
+            'NTB.N0000': 'Banks',
+            'NDB.N0000': 'Banks',
+            'COMB.X0000': 'Banks',
+            'SAMP.N0000': 'Banks',
+            'HDFC.N0000': 'Banks',
+            'SEYB.X0000': 'Banks',
+            'UBC.N0000': 'Banks',
+            'ABL.N0000': 'Banks',
+            'SEYB.N0000': 'Banks',
+            'CBNK.N0000': 'Banks',
+            'NTB.X0000': 'Banks',
+            'SEYB.R0001': 'Banks',
+            'SEYB.R0000': 'Banks',
+            'SDB.R0000': 'Banks',
+            'SAMP.R0000': 'Banks',
+            'PABC.R0000': 'Banks',
+            'NTB.R0001': 'Banks',
+            'NTB.R0000': 'Banks',
+            'NDB.R0000': 'Banks',
+            'HNB.R0001': 'Banks',
+            'HNB.R0000': 'Banks',
+            'DFCC.S0000': 'Banks',
+            'DFCC.R0000': 'Banks',
+            'COMB.R0001': 'Banks',
+            'COMB.R0000': 'Banks',
+            'ABL.R0000': 'Banks',
+            
+            // Basic Materials
+            'UCAR.N0000': 'Basic Materials',
+            'TKYO.X0000': 'Basic Materials',
+            'TKYO.R0000': 'Basic Materials',
+            'TKYO.N0000': 'Basic Materials',
+            'SIL.R0000': 'Basic Materials',
+            'SIL.N0000': 'Basic Materials',
+            'REXP.N0000': 'Basic Materials',
+            'PARQ.R0000': 'Basic Materials',
+            'PARQ.N0000': 'Basic Materials',
+            'PACK.N0000': 'Basic Materials',
+            'LLUB.N0000': 'Basic Materials',
+            'LALU.N0000': 'Basic Materials',
+            'JAT.N0000': 'Basic Materials',
+            'HAYC.N0000': 'Basic Materials',
+            'GLAS.R0000': 'Basic Materials',
+            'GLAS.N0000': 'Basic Materials',
+            'DIPD.R0000': 'Basic Materials',
+            'DIPD.N0000': 'Basic Materials',
+            'CIC.X0000': 'Basic Materials',
+            'CIC.R0001': 'Basic Materials',
+            'CIC.R0000': 'Basic Materials',
+            'CIC.N0000': 'Basic Materials',
+            'CHMX.R0000': 'Basic Materials',
+            'CHMX.N0000': 'Basic Materials',
+            'BOGA.N0000': 'Basic Materials',
+            'ASPH.R0000': 'Basic Materials',
+            'ASPH.N0000': 'Basic Materials',
+            'APLA.N0000': 'Basic Materials',
+            'ALUM.N0000': 'Basic Materials',
+            'AGST.X0000': 'Basic Materials',
+            'AGST.R0001': 'Basic Materials',
+            'AGST.R0000': 'Basic Materials',
+            'AGST.N0000': 'Basic Materials',
+            'ACME.R0000': 'Basic Materials',
+            'ACME.N0000': 'Basic Materials',
+            'RCL.N0000': 'Basic Materials',
+            
+            // Capital Goods
+            'ASHO.N0000': 'Capital Goods',
+            'BRWN.N0000': 'Capital Goods',
+            'LITE.N0000': 'Capital Goods',
+            'HHL.N0000': 'Capital Goods',
+            'MEL.N0000': 'Capital Goods',
+            'CSLK.N0000': 'Capital Goods',
+            'SPEN.N0000': 'Capital Goods',
+            'LWL.N0000': 'Capital Goods',
+            'SIRA.N0000': 'Capital Goods',
+            'TILE.N0000': 'Capital Goods',
+            'RHL.N0000': 'Capital Goods',
+            'JKH.N0000': 'Capital Goods',
+            'HAYL.N0000': 'Capital Goods',
+            'AEL.N0000': 'Capital Goods',
+            'KCAB.N0000': 'Capital Goods',
+            'DOCK.N0000': 'Capital Goods',
+            'VONE.N0000': 'Capital Goods',
+            'SHL.N0000': 'Capital Goods',
+            'EBCR.N0000': 'Capital Goods',
+            'CFLB.N0000': 'Capital Goods',
+            'ACL.N0000': 'Capital Goods',
+            'AFS.N0000': 'Capital Goods',
+            'RHL.X0000': 'Capital Goods',
+            'RICH.N0000': 'Capital Goods',
+            'CIND.N0000': 'Capital Goods',
+            'CERA.N0000': 'Capital Goods',
+            'LCEY.N0000': 'Capital Goods',
+            'LUMX.N0000': 'Capital Goods',
+            'SHL.W0000': 'Capital Goods',
+            'AFS.R0000': 'Capital Goods',
+            'TILE.R0000': 'Capital Goods',
+            'SPEN.R0000': 'Capital Goods',
+            
+            // Commercial Services
+            'EXT.N0000': 'Commercial Services',
+            'CARE.N0000': 'Commercial Services',
+            'PARA.N0000': 'Commercial Services',
+            'EML.N0000': 'Commercial Services',
+            'GEST.N0000': 'Commercial Services',
+            'CPRT.N0000': 'Commercial Services',
+            'LPRT.R0000': 'Commercial Services',
+            'LPRT.N0000': 'Commercial Services',
+            'GEST.R0000': 'Commercial Services',
+            'CPRT.R0000': 'Commercial Services',
+            
+            // Consumer Durables
+            'TJL.N0000': 'Consumer Durables',
+            'TAP.N0000': 'Consumer Durables',
+            'RGEM.N0000': 'Consumer Durables',
+            'DPL.N0000': 'Consumer Durables',
+            'ABAN.N0000': 'Consumer Durables',
+            'HEXP.N0000': 'Consumer Durables',
+            'MGT.N0000': 'Consumer Durables',
+            'HELA.N0000': 'Consumer Durables',
+            'GREG.N0000': 'Consumer Durables',
+            'HELA.R0000': 'Consumer Durables',
+            'TAP.R0000': 'Consumer Durables',
+            'RGEM.R0000': 'Consumer Durables',
+            'MGT.R0000': 'Consumer Durables',
+            'KDL.R0000': 'Consumer Durables',
+            'KDL.N0000': 'Consumer Durables',
+            'GREG.W0006': 'Consumer Durables',
+            'GREG.W0003': 'Consumer Durables',
+            'GREG.R0000': 'Consumer Durables',
+            'GREG.P0002': 'Consumer Durables',
+            'DPL.R0000': 'Consumer Durables',
+            'BLUE.X0000': 'Consumer Durables',
+            'BLUE.R0001': 'Consumer Durables',
+            'BLUE.R0000': 'Consumer Durables',
+            'BLUE.N0000': 'Consumer Durables',
+            'ABAN.R0000': 'Consumer Durables',
+            
+            // Consumer Services
+            'KHC.N0000': 'Consumer Services',
+            'JETS.N0000': 'Consumer Services',
+            'CHOT.N0000': 'Consumer Services',
+            'MARA.N0000': 'Consumer Services',
+            'RCH.N0000': 'Consumer Services',
+            'TANG.N0000': 'Consumer Services',
+            'AHPL.N0000': 'Consumer Services',
+            'TRAN.N0000': 'Consumer Services',
+            'TAJ.N0000': 'Consumer Services',
+            'GHLL.N0000': 'Consumer Services',
+            'RPBH.N0000': 'Consumer Services',
+            'LHL.N0000': 'Consumer Services',
+            'CITW.N0000': 'Consumer Services',
+            'STAF.N0000': 'Consumer Services',
+            'CITH.N0000': 'Consumer Services',
+            'KHL.N0000': 'Consumer Services',
+            'HUNA.N0000': 'Consumer Services',
+            'EDEN.N0000': 'Consumer Services',
+            'SERV.N0000': 'Consumer Services',
+            'RHTL.N0000': 'Consumer Services',
+            'BERU.N0000': 'Consumer Services',
+            'AHUN.N0000': 'Consumer Services',
+            'BBH.N0000': 'Consumer Services',
+            'BRR.N0000': 'Consumer Services',
+            'REEF.N0000': 'Consumer Services',
+            'CONN.N0000': 'Consumer Services',
+            'MRH.N0000': 'Consumer Services',
+            'SHOT.X0000': 'Consumer Services',
+            'SIGV.N0000': 'Consumer Services',
+            'PALM.N0000': 'Consumer Services',
+            'SHOT.N0000': 'Consumer Services',
+            'HSIG.N0000': 'Consumer Services',
+            'PEG.N0000': 'Consumer Services',
+            'RENU.N0000': 'Consumer Services',
+            'NEH.N0000': 'Consumer Services',
+            'RFL.N0000': 'Consumer Services',
+            'BERU.R0000': 'Consumer Services',
+            'JETS.R0000': 'Consumer Services',
+            'TANG.R0000': 'Consumer Services',
+            'STAF.R0000': 'Consumer Services',
+            'SIGV.R0000': 'Consumer Services',
+            'SHOT.R0001': 'Consumer Services',
+            'SHOT.R0000': 'Consumer Services',
+            'SERV.R0000': 'Consumer Services',
+            'RPBH.R0000': 'Consumer Services',
+            'RHTL.R0000': 'Consumer Services',
+            'RENU.R0000': 'Consumer Services',
+            'REEF.W0018': 'Consumer Services',
+            'REEF.W0019': 'Consumer Services',
+            'REEF.R0000': 'Consumer Services',
+            'REEF.W0017': 'Consumer Services',
+            'PEG.R0000': 'Consumer Services',
+            'PALM.R0000': 'Consumer Services',
+            'NEH.R0000': 'Consumer Services',
+            'MRH.R0000': 'Consumer Services',
+            'MARA.R0000': 'Consumer Services',
+            'KHL.R0000': 'Consumer Services',
+            'KHC.P0002': 'Consumer Services',
+            'HUNA.R0000': 'Consumer Services',
+            'HSIG.R0000': 'Consumer Services',
+            'EDEN.R0000': 'Consumer Services',
+            'CONN.R0000': 'Consumer Services',
+            'CITW.R0000': 'Consumer Services',
+            'CITH.R0000': 'Consumer Services',
+            'CHOT.R0000': 'Consumer Services',
+            'BBH.R0000': 'Consumer Services',
+            'ALHP.R0000': 'Consumer Services',
+            'ALHP.N0000': 'Consumer Services',
+            'AHUN.R0000': 'Consumer Services',
+            
+            // Diversified Finance
+            'HNBF.X0000': 'Diversified Finance',
+            'SEMB.N0000': 'Diversified Finance',
+            'UBF.N0000': 'Diversified Finance',
+            'CFI.N0000': 'Diversified Finance',
+            'MBSL.N0000': 'Diversified Finance',
+            'CIT.N0000': 'Diversified Finance',
+            'CRL.N0000': 'Diversified Finance',
+            'CDB.X0000': 'Diversified Finance',
+            'ASIY.N0000': 'Diversified Finance',
+            'SFCL.N0000': 'Diversified Finance',
+            'AAF.P0000': 'Diversified Finance',
+            'CDB.N0000': 'Diversified Finance',
+            'WAPO.N0000': 'Diversified Finance',
+            'AFSL.N0000': 'Diversified Finance',
+            'CALF.N0000': 'Diversified Finance',
+            'HNBF.R0001': 'Diversified Finance',
+            'HNBF.R0000': 'Diversified Finance',
+            'UBF.R0000': 'Diversified Finance',
+            'LVEN.R0000': 'Diversified Finance',
+            'WAPO.R0000': 'Diversified Finance',
+            'VFIN.R0000': 'Diversified Finance',
+            'SFIN.R0000': 'Diversified Finance',
+            'SFCL.R0000': 'Diversified Finance',
+            'SEMB.W0016': 'Diversified Finance',
+            'SEMB.W0015': 'Diversified Finance',
+            'SEMB.R0001': 'Diversified Finance',
+            'SEMB.R0000': 'Diversified Finance',
+            'PMB.R0000': 'Diversified Finance',
+            'MERC.N0000': 'Diversified Finance',
+            'MBSL.R0000': 'Diversified Finance',
+            'LOLC.R0000': 'Diversified Finance',
+            'LOFC.R0000': 'Diversified Finance',
+            'LFIN.R0000': 'Diversified Finance',
+            'KZOO.R0000': 'Diversified Finance',
+            'GUAR.R0000': 'Diversified Finance',
+            'CSF.W0021': 'Diversified Finance',
+            'CSF.R0000': 'Diversified Finance',
+            'CSF.N0000': 'Diversified Finance',
+            'CRL.R0000': 'Diversified Finance',
+            'CIT.R0000': 'Diversified Finance',
+            'CINV.R0000': 'Diversified Finance',
+            'CFVF.R0000': 'Diversified Finance',
+            'CFI.R0000': 'Diversified Finance',
+            'CDB.R0001': 'Diversified Finance',
+            'CDB.R0000': 'Diversified Finance',
+            'CALF.R0000': 'Diversified Finance',
+            'BLI.R0000': 'Diversified Finance',
+            'BLI.N0000': 'Diversified Finance',
+            'BFN.R0000': 'Diversified Finance',
+            'AMF.R0000': 'Diversified Finance',
+            'AMCL.N0000': 'Diversified Finance',
+            'ALLI.R0000': 'Diversified Finance',
+            'AFSL.R0000': 'Diversified Finance',
+            'ACAP.N0000': 'Diversified Finance',
+            'AAF.R0001': 'Diversified Finance',
+            'AAF.R0000': 'Diversified Finance',
+            
+            // Energy
+            'LIOC.N0000': 'Energy',
+            'LGL.N0000': 'Energy',
+            'LGL.X0000': 'Energy',
+            'CFIN.N0000': 'Energy',
+            'CALT.N0000': 'Energy',
+            
+            // Diversified Finance
+            'HNBF.X0000': 'Diversified Finance',
+            'SEMB.N0000': 'Diversified Finance',
+            'UBF.N0000': 'Diversified Finance',
+            'CFI.N0000': 'Diversified Finance',
+            'MBSL.N0000': 'Diversified Finance',
+            'CIT.N0000': 'Diversified Finance',
+            'CRL.N0000': 'Diversified Finance',
+            'CDB.X0000': 'Diversified Finance',
+            'ASIY.N0000': 'Diversified Finance',
+            'SFCL.N0000': 'Diversified Finance',
+            'AAF.P0000': 'Diversified Finance',
+            'CDB.N0000': 'Diversified Finance',
+            'WAPO.N0000': 'Diversified Finance',
+            'AFSL.N0000': 'Diversified Finance',
+            'CALF.N0000': 'Diversified Finance',
+            'HNBF.R0001': 'Diversified Finance',
+            'HNBF.R0000': 'Diversified Finance',
+            'UBF.R0000': 'Diversified Finance',
+            'LVEN.R0000': 'Diversified Finance',
+            'WAPO.R0000': 'Diversified Finance',
+            'VFIN.R0000': 'Diversified Finance',
+            'SFIN.R0000': 'Diversified Finance',
+            'SFCL.R0000': 'Diversified Finance',
+            'SEMB.W0016': 'Diversified Finance',
+            'SEMB.W0015': 'Diversified Finance',
+            'SEMB.R0001': 'Diversified Finance',
+            'SEMB.R0000': 'Diversified Finance',
+            'PMB.R0000': 'Diversified Finance',
+            'MERC.N0000': 'Diversified Finance',
+            'MBSL.R0000': 'Diversified Finance',
+            'LOLC.R0000': 'Diversified Finance',
+            'LOFC.R0000': 'Diversified Finance',
+            'LFIN.R0000': 'Diversified Finance',
+            'KZOO.R0000': 'Diversified Finance',
+            'GUAR.R0000': 'Diversified Finance',
+            'CSF.W0021': 'Diversified Finance',
+            'CSF.R0000': 'Diversified Finance',
+            'CSF.N0000': 'Diversified Finance',
+            'CRL.R0000': 'Diversified Finance',
+            'CIT.R0000': 'Diversified Finance',
+            'CINV.R0000': 'Diversified Finance',
+            'CFVF.R0000': 'Diversified Finance',
+            'CFI.R0000': 'Diversified Finance',
+            'CDB.R0001': 'Diversified Finance',
+            'CDB.R0000': 'Diversified Finance',
+            'CALF.R0000': 'Diversified Finance',
+            'BLI.R0000': 'Diversified Finance',
+            'BLI.N0000': 'Diversified Finance',
+            'BFN.R0000': 'Diversified Finance',
+            'AMF.R0000': 'Diversified Finance',
+            'AMCL.N0000': 'Diversified Finance',
+            'ALLI.R0000': 'Diversified Finance',
+            'AFSL.R0000': 'Diversified Finance',
+            'ACAP.N0000': 'Diversified Finance',
+            'AAF.R0001': 'Diversified Finance',
+            'AAF.R0000': 'Diversified Finance',
+            
+            // Food & Beverage
+            'LMF.N0000': 'Food & Beverage',
+            'WATA.N0000': 'Food & Beverage',
+            'TAFL.N0000': 'Food & Beverage',
+            'BIL.N0000': 'Food & Beverage',
+            'BUKI.N0000': 'Food & Beverage',
+            'HVA.N0000': 'Food & Beverage',
+            'DIST.N0000': 'Food & Beverage',
+            'BFL.N0000': 'Food & Beverage',
+            'TSML.N0000': 'Food & Beverage',
+            'KOTA.N0000': 'Food & Beverage',
+            'SUN.N0000': 'Food & Beverage',
+            'MCPL.N0000': 'Food & Beverage',
+            'UDPL.N0000': 'Food & Beverage',
+            'ELPL.N0000': 'Food & Beverage',
+            'LDEV.N0000': 'Food & Beverage',
+            'RWSL.N0000': 'Food & Beverage',
+            'AGPL.N0000': 'Food & Beverage',
+            'HPL.N0000': 'Food & Beverage',
+            'CARS.N0000': 'Food & Beverage',
+            'HOPL.N0000': 'Food & Beverage',
+            'TPL.N0000': 'Food & Beverage',
+            'BALA.N0000': 'Food & Beverage',
+            'CCS.N0000': 'Food & Beverage',
+            'MELS.N0000': 'Food & Beverage',
+            'MADU.N0000': 'Food & Beverage',
+            'COCO.N0000': 'Food & Beverage',
+            'COCO.X0000': 'Food & Beverage',
+            'GRAN.N0000': 'Food & Beverage',
+            'KGAL.N0000': 'Food & Beverage',
+            'MFPE.N0000': 'Food & Beverage',
+            'LION.N0000': 'Food & Beverage',
+            'CTC.N0000': 'Food & Beverage',
+            'AGAL.N0000': 'Food & Beverage',
+            'KVAL.N0000': 'Food & Beverage',
+            'LAMB.N0000': 'Food & Beverage',
+            'SOY.N0000': 'Food & Beverage',
+            'MASK.N0000': 'Food & Beverage',
+            'RAL.N0000': 'Food & Beverage',
+            'MAL.N0000': 'Food & Beverage',
+            'KAHA.N0000': 'Food & Beverage',
+            'NAMU.N0000': 'Food & Beverage',
+            'HAPU.N0000': 'Food & Beverage',
+            'BREW.N0000': 'Food & Beverage',
+            'CTEA.N0000': 'Food & Beverage',
+            'BOPL.N0000': 'Food & Beverage',
+            'KFP.N0000': 'Food & Beverage',
+            'HARI.N0000': 'Food & Beverage',
+            'BALA.R0000': 'Food & Beverage',
+            'HVA.R0000': 'Food & Beverage',
+            'UDPL.R0000': 'Food & Beverage',
+            'SUN.R0000': 'Food & Beverage',
+            'SOY.R0000': 'Food & Beverage',
+            'RAL.R0000': 'Food & Beverage',
+            'MASK.R0000': 'Food & Beverage',
+            'MAL.X0000': 'Food & Beverage',
+            'MADU.R0000': 'Food & Beverage',
+            'LMF.R0000': 'Food & Beverage',
+            'LION.R0000': 'Food & Beverage',
+            'LDEV.R0000': 'Food & Beverage',
+            'KOTA.R0000': 'Food & Beverage',
+            'KFP.R0000': 'Food & Beverage',
+            'KAHA.R0000': 'Food & Beverage',
+            'HAPU.R0000': 'Food & Beverage',
+            'GRAN.R0000': 'Food & Beverage',
+            'ELPL.R0000': 'Food & Beverage',
+            'COCO.R0001': 'Food & Beverage',
+            'COCO.R0000': 'Food & Beverage',
+            'CCS.R0000': 'Food & Beverage',
+            'BREW.R0000': 'Food & Beverage',
+            'BOPL.R0000': 'Food & Beverage',
+            'BIL.R0000': 'Food & Beverage',
+            'ASPM.N0000': 'Food & Beverage',
+            'AGAL.R0000': 'Food & Beverage',
+            
+            // Food Retailing
+            'CARG.N0000': 'Food Retailing',
+            'TESS.N0000': 'Food Retailing',
+            'TESS.X0000': 'Food Retailing',
+            'CTHR.N0000': 'Food Retailing',
+            'TESS.R0001': 'Food Retailing',
+            'TESS.R0000': 'Food Retailing',
+            'CTHR.R0000': 'Food Retailing',
+            'CARG.R0000': 'Food Retailing',
+            
+            // Health Care Equipment
+            'NHL.N0000': 'Health Care Equipment',
+            'SINH.N0000': 'Health Care Equipment',
+            'CHL.X0000': 'Health Care Equipment',
+            'CHL.N0000': 'Health Care Equipment',
+            'AMSL.N0000': 'Health Care Equipment',
+            'ASIR.N0000': 'Health Care Equipment',
+            'ECL.N0000': 'Health Care Equipment',
+            'MULL.N0000': 'Health Care Equipment',
+            'LHCL.N0000': 'Health Care Equipment',
+            'NHL.R0000': 'Health Care Equipment',
+            'MULL.R0000': 'Health Care Equipment',
+            'LHCL.R0000': 'Health Care Equipment',
+            'ECL.R0000': 'Health Care Equipment',
+            'CHL.R0001': 'Health Care Equipment',
+            'CHL.R0000': 'Health Care Equipment',
+            'ASIR.R0000': 'Health Care Equipment',
+            'AMSL.R0000': 'Health Care Equipment',
+            
+            // Household Products
+            'BPPL.N0000': 'Household Products',
+            'SWAD.R0000': 'Household Products',
+            'SWAD.N0000': 'Household Products',
+            'EXT.B0000': 'Household Products',
+            
+            // Insurance
+            'JINS.N0000': 'Insurance',
+            'AAIC.N0000': 'Insurance',
+            'COOP.N0000': 'Insurance',
+            'SCAP.N0000': 'Insurance',
+            'ATL.N0000': 'Insurance',
+            'CINS.X0000': 'Insurance',
+            'PINS.N0000': 'Insurance',
+            'UAL.N0000': 'Insurance',
+            'HASU.N0000': 'Insurance',
+            'CINS.N0000': 'Insurance',
+            'LGIL.N0000': 'Insurance',
+            'ATLL.N0000': 'Insurance',
+            'AINS.N0000': 'Insurance',
+            'UAL.R0000': 'Insurance',
+            'SCAP.R0000': 'Insurance',
+            'JINS.R0000': 'Insurance',
+            'HASU.R0000': 'Insurance',
+            'CINS.R0000': 'Insurance',
+            'ATL.R0000': 'Insurance',
+            'AAIC.R0000': 'Insurance',
+            
+            // Real Estate
+            'EAST.N0000': 'Real Estate',
+            'PLR.N0000': 'Real Estate',
+            'OSEA.N0000': 'Real Estate',
+            'ASCO.N0000': 'Real Estate',
+            'CSD.N0000': 'Real Estate',
+            'MHDL.N0000': 'Real Estate',
+            'PHAR.N0000': 'Real Estate',
+            'CLND.N0000': 'Real Estate',
+            'COMD.N0000': 'Real Estate',
+            'ONAL.N0000': 'Real Estate',
+            'ETWO.N0000': 'Real Estate',
+            'CABO.N0000': 'Real Estate',
+            'SLND.N0000': 'Real Estate',
+            'SHAW.N0000': 'Real Estate',
+            'SING.N0000': 'Real Estate',
+            'YORK.N0000': 'Real Estate',
+            'CTLD.N0000': 'Real Estate',
+            'MDL.N0000': 'Real Estate',
+            'YORK.R0000': 'Real Estate',
+            'SING.R0000': 'Real Estate',
+            'PHAR.R0000': 'Real Estate',
+            'OSEA.R0000': 'Real Estate',
+            'ONAL.R0000': 'Real Estate',
+            'ETWO.R0000': 'Real Estate',
+            'EAST.R0000': 'Real Estate',
+            'CTLD.R0000': 'Real Estate',
+            'CSD.R0000': 'Real Estate',
+            'CHOU.R0000': 'Real Estate',
+            'CHOU.N0000': 'Real Estate',
+            'CABO.R0000': 'Real Estate',
+            'ASCO.W0024': 'Real Estate',
+            'ASCO.R0000': 'Real Estate',
+            
+            // Retailing
+            'UML.N0000': 'Retailing',
+            'SMOT.R0000': 'Retailing',
+            'SMOT.N0000': 'Retailing',
+            'SINS.R0000': 'Retailing',
+            'SINS.N0000': 'Retailing',
+            'RIL.R0000': 'Retailing',
+            'RIL.N0000': 'Retailing',
+            'ODEL.R0000': 'Retailing',
+            'ODEL.N0000': 'Retailing',
+            'KPHL.N0000': 'Retailing',
+            'JKL.N0000': 'Retailing',
+            'HUNT.R0000': 'Retailing',
+            'HUNT.N0000': 'Retailing',
+            'EMER.N0000': 'Retailing',
+            'DIMO.R0000': 'Retailing',
+            'DIMO.N0000': 'Retailing',
+            'CWM.R0000': 'Retailing',
+            'CWM.N0000': 'Retailing',
+            'CTBL.R0000': 'Retailing',
+            'CTBL.N0000': 'Retailing',
+            'COLO.R0000': 'Retailing',
+            'COLO.N0000': 'Retailing',
+            'AUTO.R0000': 'Retailing',
+            'AUTO.N0000': 'Retailing',
+            
+            // Software & Services
+            'HBS.N0000': 'Software & Services',
+            
+            // Telecommunication
+            'SLTL.N0000': 'Telecommunication',
+            'DIAL.N0000': 'Telecommunication',
+            'DIAL.R0000': 'Telecommunication',
+            
+            // Transportation
+            'PKME.N0000': 'Transportation',
+            'CWL.N0000': 'Transportation',
+            'MSL.N0000': 'Transportation',
+            'MSL.R0000': 'Transportation',
+            
+            // Utilities
+            'LVEF.N0000': 'Utilities',
+            'PAP.N0000': 'Utilities',
+            'VLL.N0000': 'Utilities',
+            'VPEL.N0000': 'Utilities',
+            'WIND.N0000': 'Utilities',
+            'VLL.X0000': 'Utilities',
+            'HPWR.N0000': 'Utilities',
+            'LPL.N0000': 'Utilities',
+            'LPL.X0000': 'Utilities',
+            'HPFL.N0000': 'Utilities',
+            'LVEF.R0000': 'Utilities',
+            'VLL.R0001': 'Utilities',
+            'VLL.R0000': 'Utilities'
+        };
+
+        // Register Chart.js plugins
+        Chart.register(ChartDataLabels);
+    </script>
+</body>
+</html>
