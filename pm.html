@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portfolio Dashboard</title>
-    <!-- Note: cdn.tailwindcss.com is for development only. For production, install Tailwind CSS as a PostCSS plugin or use the Tailwind CLI -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -1242,13 +1241,12 @@
                 const request = indexedDB.open(DB_NAME, DB_VERSION);
                 
                 request.onerror = () => {
-                    console.error('Database error:', request.error);
+                    // Database error
                     reject(request.error);
                 };
                 
                 request.onsuccess = () => {
                     db = request.result;
-                    console.log('Database opened successfully');
                     resolve(db);
                 };
                 
@@ -1261,7 +1259,6 @@
                         store.createIndex('name', 'name', { unique: false });
                         store.createIndex('date', 'date', { unique: false });
                         store.createIndex('createdAt', 'metadata.createdAt', { unique: false });
-                        console.log('Portfolio store created');
                     }
                 };
             });
@@ -1283,14 +1280,12 @@
                 const request = store.put(portfolio);
                 
                 request.onsuccess = () => {
-                    console.log('Portfolio saved to database:', portfolio.name);
                     // Also save to LocalStorage as backup
                     savePortfolioToLocalStorage(portfolio);
                     resolve(request.result);
                 };
                 
                 request.onerror = () => {
-                    console.error('Error saving portfolio:', request.error);
                     reject(request.error);
                 };
             });
@@ -1309,7 +1304,6 @@
                 
                 request.onsuccess = () => {
                     if (request.result) {
-                        console.log('Portfolio loaded from database:', request.result.name);
                         resolve(request.result);
                     } else {
                         reject(new Error('Portfolio not found'));
@@ -1317,7 +1311,6 @@
                 };
                 
                 request.onerror = () => {
-                    console.error('Error loading portfolio:', request.error);
                     reject(request.error);
                 };
             });
@@ -1338,19 +1331,10 @@
                     const portfolios = request.result.sort((a, b) => 
                         new Date(b.metadata.createdAt) - new Date(a.metadata.createdAt)
                     );
-                    console.log(`Loaded ${portfolios.length} portfolios from database`);
-                    console.log('Portfolio details:', portfolios.map(p => ({
-                        id: p.id,
-                        name: p.name,
-                        description: p.description,
-                        fileCount: p.metadata.fileCount,
-                        createdAt: p.metadata.createdAt
-                    })));
                     resolve(portfolios);
                 };
                 
                 request.onerror = () => {
-                    console.error('Error loading portfolios:', request.error);
                     reject(request.error);
                 };
             });
@@ -1368,14 +1352,12 @@
                 const request = store.delete(portfolioId);
                 
                 request.onsuccess = () => {
-                    console.log('Portfolio deleted from database');
                     // Also remove from LocalStorage backup
                     removePortfolioFromLocalStorage(portfolioId);
                     resolve();
                 };
                 
                 request.onerror = () => {
-                    console.error('Error deleting portfolio:', request.error);
                     reject(request.error);
                 };
             });
@@ -1393,9 +1375,7 @@
                     holdingsCount: portfolio.holdings.length
                 };
                 localStorage.setItem(BACKUP_KEY, JSON.stringify(backupData));
-                console.log('Portfolio metadata backed up to LocalStorage');
             } catch (error) {
-                console.error('Error backing up to LocalStorage:', error);
             }
         }
 
@@ -1404,9 +1384,7 @@
                 const backupData = JSON.parse(localStorage.getItem(BACKUP_KEY) || '{}');
                 delete backupData[portfolioId];
                 localStorage.setItem(BACKUP_KEY, JSON.stringify(backupData));
-                console.log('Portfolio removed from LocalStorage backup');
             } catch (error) {
-                console.error('Error removing from LocalStorage backup:', error);
             }
         }
 
@@ -1422,9 +1400,7 @@
                 link.click();
                 
                 URL.revokeObjectURL(link.href);
-                console.log('Portfolio exported successfully');
             } catch (error) {
-                console.error('Error exporting portfolio:', error);
                 alert('Error exporting portfolio: ' + error.message);
             }
         }
@@ -1485,12 +1461,10 @@
         document.addEventListener('DOMContentLoaded', async function() {
             try {
                 await initDatabase();
-                console.log('Portfolio database initialized successfully');
                 
                 // Since portfolio management is now the default page, load the portfolio list automatically
                 loadPortfolioList();
             } catch (error) {
-                console.error('Failed to initialize database:', error);
                 alert('Warning: Portfolio database could not be initialized. Some features may not work properly.');
             }
         });
@@ -1561,7 +1535,6 @@
                 // Sort portfolios by date (YYYYMMDD format sorts chronologically)
                 uniquePortfolios.sort((a, b) => a.name.localeCompare(b.name));
                 
-                console.log(`Loaded ${portfolios.length} total portfolios, showing ${uniquePortfolios.length} unique portfolios`);
                 
                 if (uniquePortfolios.length === 0) {
                     // Keep the controls but hide the portfolio content
@@ -1592,7 +1565,6 @@
                 updatePortfolioCount();
                 
             } catch (error) {
-                console.error('Error loading portfolio list:', error);
                 showNotification('Error loading portfolios: ' + error.message, 'error');
             }
         }
@@ -1753,7 +1725,6 @@
                 updateCompareButtonState();
                 
             } catch (error) {
-                console.error('Error loading portfolio selects:', error);
             }
         }
 
@@ -1807,7 +1778,6 @@
                 refreshDashboard();
                 
             } catch (error) {
-                console.error('Error viewing portfolio:', error);
                 alert('Error loading portfolio: ' + error.message);
             }
         }
@@ -1822,7 +1792,6 @@
                 loadPortfolioList(); // Refresh the list
                 alert('Portfolio deleted successfully');
             } catch (error) {
-                console.error('Error deleting portfolio:', error);
                 alert('Error deleting portfolio: ' + error.message);
             }
         }
@@ -1861,7 +1830,6 @@
             const newPortfolioBtn = document.getElementById('newPortfolioBtn');
             if (newPortfolioBtn) {
                 newPortfolioBtn.addEventListener('click', () => {
-                    console.log('New Portfolio button clicked!');
                     // Generate new portfolio name
                     const newName = generateDefaultPortfolioName();
                     const today = new Date().toISOString().split('T')[0];
@@ -1872,16 +1840,12 @@
                     const uploadModal = document.getElementById('uploadModal');
                     if (uploadModal) {
                         uploadModal.classList.remove('hidden');
-                        console.log('Upload modal opened!');
                     } else {
-                        console.error('Upload modal not found!');
                     }
                     
                     // Show message in console for production
-                    console.log(`New portfolio "${newName}" ready for upload!`);
                 });
             } else {
-                console.error('New Portfolio button not found!');
             }
             
             // Compare Portfolios button in management section
@@ -1938,7 +1902,6 @@
                             alert('Portfolio imported successfully!');
                             loadPortfolioList();
                         } catch (error) {
-                            console.error('Error importing portfolio:', error);
                             alert('Error importing portfolio: ' + error.message);
                         }
                         // Reset file input
@@ -1956,7 +1919,6 @@
                         try {
                             await importPortfoliosFromZip(file);
                         } catch (error) {
-                            console.error('Error importing portfolios from ZIP:', error);
                             alert('Error importing portfolios: ' + error.message);
                         }
                         // Reset file input
@@ -2026,7 +1988,6 @@
                         refreshDashboard();
                         
                     } catch (error) {
-                        console.error('Error setting up comparison:', error);
                         alert('Error setting up comparison: ' + error.message);
                     }
                 });
@@ -2073,7 +2034,6 @@
                 });
             }
         } catch (error) {
-            console.error('Error setting up comparison mode toggle:', error);
         }
 
         // Upload Modal functionality
@@ -2096,7 +2056,6 @@
                 });
             }
         } catch (error) {
-            console.error('Error setting up upload modal:', error);
         }
 
         // Export and Print button event listeners
@@ -2217,7 +2176,6 @@
                 }, 1000);
                 
             } catch (error) {
-                console.error('Error refreshing dashboard:', error);
             }
         }
 
@@ -2241,7 +2199,6 @@
                     }
                 });
             } catch (error) {
-                console.error('Error cleaning up charts:', error);
             }
         }
 
@@ -2283,7 +2240,6 @@
                 });
             }
         } catch (error) {
-            console.error('Error setting up clear data button:', error);
         }
 
         // File upload handling
@@ -2302,14 +2258,12 @@
                     // Store the files before clearing the input
                     const filesToProcess = Array.from(files);
                     
-                    console.log(`Files to process:`, filesToProcess.map(f => ({ name: f.name, size: f.size, type: f.type })));
                     
                     // Automatically clear any existing data first to prevent partial data issues
                     allUploadedData = [];
                     portfolioData = [];
                     sectorMapping = {};
                     
-                    console.log(`Cleared existing data. Starting fresh.`);
                     
                     // Hide dashboard if it was previously shown
                     const dashboardContent = document.getElementById('dashboardContent');
@@ -2352,21 +2306,16 @@
                             const file = fileList[i];
                             
                             try {
-                                console.log(`Processing file: ${file.name} (${file.type})`);
                                 const fileData = await readFileAsync(file);
-                                console.log(`File data type: ${fileData.type}`);
                                 
                                 let newData = [];
                                 
                                 if (fileData.type === 'csv') {
-                                    console.log('Parsing as CSV...');
                                     newData = parseCSV(fileData.data);
                                 } else if (fileData.type === 'excel') {
-                                    console.log('Parsing as Excel...');
                                     newData = parseExcel(fileData.data);
                                 }
                                 
-                                console.log(`Parsed ${newData.length} items from ${file.name}`);
                                 
                                 if (newData && newData.length > 0) {
                                     // Check for duplicates before adding
@@ -2375,19 +2324,14 @@
                                     const duplicateSecurities = newSecurities.filter(security => existingSecurities.has(security));
                                     
                                     if (duplicateSecurities.length > 0) {
-                                        console.warn(`DUPLICATE SECURITIES FOUND in ${file.name}:`, duplicateSecurities);
-                                        console.warn(`This file contains securities that were already processed:`, duplicateSecurities);
                                     }
                                     
                                     allUploadedData.push(...newData);
                                     totalSecurities += newData.length;
                                     processedFiles++;
-                                    console.log(`Successfully processed ${file.name}. Total items in allUploadedData: ${allUploadedData.length}`);
                                 } else {
-                                    console.warn(`No data parsed from ${file.name}`);
                                 }
                             } catch (error) {
-                                console.error(`Error processing ${file.name}:`, error);
                             }
                         }
                         
@@ -2491,7 +2435,6 @@
                                         }
                                         
                                     } catch (error) {
-                                        console.error('Error saving portfolio:', error);
                                         alert('Error saving portfolio: ' + error.message);
                                         
                                         // Still show dashboard even if save failed
@@ -2509,7 +2452,6 @@
                                     }
                                 }
                             } catch (error) {
-                                console.error('Error in portfolio combination:', error);
                                 alert('Error processing portfolio data: ' + error.message);
                             }
                         } else {
@@ -2522,7 +2464,6 @@
                 });
             }
         } catch (error) {
-            console.error('Error setting up upload button:', error);
         }
         
         // Helper function to read file asynchronously
@@ -2557,12 +2498,9 @@
         // Combine portfolios and aggregate by security
         function combinePortfolios(allData) {
             if (!Array.isArray(allData)) {
-                console.error('Input data is not an array!');
                 return [];
             }
             
-            console.log(`combinePortfolios: Starting with ${allData.length} items`);
-            console.log(`Sample items:`, allData.slice(0, 3));
             
             const combined = {};
             let processedCount = 0;
@@ -2574,7 +2512,6 @@
                 processedCount++;
                 
                 if (!item.security) {
-                    console.warn(`Item ${index} has no security field:`, item);
                     return;
                 }
                 
@@ -2584,11 +2521,6 @@
                     const oldTotalCost = combined[item.security].totalCost;
                     const oldMarketValue = combined[item.security].marketValue;
                     const oldUnrealizedPnL = combined[item.security].unrealizedPnL;
-                    
-                    console.log(`Aggregating ${item.security}:`, {
-                        old: { quantity: oldQuantity, totalCost: oldTotalCost, marketValue: oldMarketValue, unrealizedPnL: oldUnrealizedPnL },
-                        new: { quantity: item.quantity, totalCost: item.totalCost, marketValue: item.marketValue, unrealizedPnL: item.unrealizedPnL }
-                    });
                     
                     combined[item.security].quantity += item.quantity;
                     combined[item.security].totalCost += item.totalCost;
@@ -2611,16 +2543,6 @@
             
             const result = Object.values(combined);
             
-            console.log(`combinePortfolios: Final results:`, {
-                totalInput: allData.length,
-                processed: processedCount,
-                newSecurities: newSecuritiesCount,
-                aggregatedSecurities: aggregatedSecuritiesCount,
-                duplicatesFound: duplicateCount,
-                finalSecurities: result.length,
-                sampleResult: result.slice(0, 3)
-            });
-            
             return result;
         }
 
@@ -2628,11 +2550,9 @@
         function parseExcel(workbook) {
             try {
                 const data = [];
-                console.log('Processing Excel workbook with sheets:', workbook.SheetNames);
                 
                 // Only process the first sheet to avoid duplication
                 const sheetName = workbook.SheetNames[0];
-                    console.log(`Processing sheet: ${sheetName}`);
                     const worksheet = workbook.Sheets[sheetName];
                     
                     // Try different parsing approaches
@@ -2641,18 +2561,14 @@
                         // First try: with headers
                         jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
                     } catch (e) {
-                        console.log('Header parsing failed, trying without headers...');
                         try {
                             jsonData = XLSX.utils.sheet_to_json(worksheet);
                         } catch (e2) {
-                            console.log('JSON parsing failed, trying raw data...');
                             jsonData = XLSX.utils.sheet_to_json(worksheet, { raw: true, header: 1 });
                         }
                     }
                     
-                    console.log(`Sheet ${sheetName} has ${jsonData.length} rows`);
                     if (jsonData.length > 0) {
-                        console.log('Sample row data:', jsonData[0]);
                     }
                     
                     if (jsonData.length === 0) return;
@@ -2667,9 +2583,7 @@
                         }
                     }
                     
-                    console.log(`Header row found at index: ${headerRowIndex}`);
                     const headers = jsonData[headerRowIndex] || [];
-                    console.log('Headers found:', headers);
                     
                     // Process data rows
                     for (let i = headerRowIndex + 1; i < jsonData.length; i++) {
@@ -2683,17 +2597,6 @@
                             }
                         });
                         
-                        console.log(`Processing row ${i}:`, item);
-                        console.log(`Row data types:`, {
-                            Security: { value: item['Security'], type: typeof item['Security'] },
-                            Quantity: { value: item['Quantity'], type: typeof item['Quantity'] },
-                            'Avg Price': { value: item['Avg Price'], type: typeof item['Avg Price'] },
-                            'Total Cost': { value: item['Total Cost'], type: typeof item['Total Cost'] },
-                            'Market Value': { value: item['Market Value'], type: typeof item['Market Value'] },
-                            'Unrealized Gain / (Loss)': { value: item['Unrealized Gain / (Loss)'], type: typeof item['Unrealized Gain / (Loss)'] },
-                            'Unrealized Gain/Loss %': { value: item['Unrealized Gain/Loss %'], type: typeof item['Unrealized Gain/Loss %'] }
-                        });
-                        
                         // Map the specific columns from your Excel format - using exact headers
                         const mappedItem = {
                             security: item['Security'] || '',
@@ -2705,7 +2608,6 @@
                             returnPercent: safeParseNumber(item['Unrealized Gain/Loss %'] || 0)
                         };
                         
-                        console.log(`Mapped item:`, mappedItem);
                         
                         // Only add if we have valid security data and it's not a summary row
                         if (mappedItem.security && 
@@ -2719,9 +2621,6 @@
                             // Check for duplicate securities within this sheet
                             const existingIndex = data.findIndex(existing => existing.security === mappedItem.security);
                             if (existingIndex !== -1) {
-                                console.warn(`DUPLICATE SECURITY FOUND in sheet ${sheetName}:`, mappedItem.security);
-                                console.warn(`Existing item:`, data[existingIndex]);
-                                console.warn(`New item:`, mappedItem);
                             }
                             
                             // Calculate missing values if possible
@@ -2740,29 +2639,21 @@
                             }
                             
                             data.push(mappedItem);
-                            console.log(`Added valid item:`, mappedItem);
                         } else {
                             if (mappedItem.security && mappedItem.security.toString().length > 0) {
                                 if (mappedItem.security.toLowerCase().includes('total') ||
                                     mappedItem.security.toLowerCase().includes('portfolio') ||
                                     mappedItem.security.toLowerCase().includes('summary') ||
                                     mappedItem.security.toLowerCase().includes('grand total')) {
-                                    console.log(`Skipped summary row: "${mappedItem.security}"`);
                                 } else {
-                                    console.log(`Skipped invalid item:`, mappedItem);
                                 }
                             } else {
-                                console.log(`Skipped invalid item:`, mappedItem);
                             }
                         }
                     }
                 
-                console.log(`Total items parsed from Excel: ${data.length}`);
-                console.log(`Number of sheets processed: 1 (only first sheet)`);
-                console.log(`Sheet name: ${sheetName}`);
                 return data;
             } catch (error) {
-                console.error('Error in parseExcel:', error);
                 return [];
             }
         }
@@ -2840,7 +2731,6 @@
                 
                 return data;
             } catch (error) {
-                console.error('Error in parseCSV:', error);
                 return [];
             }
         }
@@ -2906,13 +2796,11 @@
                 
                 // Check if parsing was successful
                 if (isNaN(result)) {
-                    console.warn('Failed to parse number:', value, 'Type:', typeof value);
                     return 0;
                 }
                 
                 return isNegative ? -result : result;
             } catch (error) {
-                console.error('Error in safeParseNumber:', error, 'Value:', value, 'Type:', typeof value);
                 return 0;
             }
         }
@@ -2941,7 +2829,6 @@
             
             // Check if parsing was successful
             if (isNaN(result)) {
-                console.warn('Failed to parse number:', numStr);
                 return 0;
             }
             
@@ -3041,7 +2928,6 @@
                 populateComparisonTable(initial, current);
                 
             } catch (error) {
-                console.error('Error calculating comparison data:', error);
             }
         }
 
@@ -3180,7 +3066,6 @@
                 }
                 
             } catch (error) {
-                console.error('Error populating comparison table:', error);
             }
         }
 
@@ -3276,7 +3161,6 @@
                     }
                 });
             } catch (error) {
-                console.error('Error creating allocation chart:', error);
             }
         }
 
@@ -3348,7 +3232,6 @@
                     }
                 });
             } catch (error) {
-                console.error('Error creating performance chart:', error);
             }
         }
 
@@ -3445,7 +3328,6 @@
                     }
                 });
             } catch (error) {
-                console.error('Error creating sector chart:', error);
             }
         }
 
@@ -3537,7 +3419,6 @@
                     }
                 });
             } catch (error) {
-                console.error('Error creating sector performance chart:', error);
             }
         }
 
@@ -3607,7 +3488,6 @@
                 
                 
             } catch (error) {
-                console.error('Error populating trading journal:', error);
             }
         }
 
@@ -3738,7 +3618,6 @@
                 }
                 
             } catch (error) {
-                console.error('Error in populateTable:', error);
             }
         }
 
@@ -3758,7 +3637,6 @@
                 createSectorPerformanceChart();
                 populateTable();
             } catch (error) {
-                console.error('Error in initDashboard:', error);
             }
         }
 
@@ -4295,7 +4173,6 @@
             try {
                 const chartContainer = document.getElementById('diversificationChart');
                 if (!chartContainer) {
-                    console.log('Diversification chart container not found');
                     return;
                 }
                 
@@ -4324,13 +4201,11 @@
                     
                     // Ensure the sector is actually a valid sector, not a security name
                     if (!validSectors.has(sector)) {
-                        console.warn(`Invalid sector "${sector}" for security "${item.security}", setting to Unknown`);
                         sector = 'Unknown';
                     }
                     
                     // Ensure the security name is not the same as a sector name
                     if (validSectors.has(item.security)) {
-                        console.warn(`Security name "${item.security}" conflicts with sector name, skipping`);
                         return;
                     }
                     
@@ -4341,7 +4216,6 @@
                     
                     // Ensure we're always working with an array
                     if (!Array.isArray(sectorData[sector])) {
-                        console.warn(`Sector "${sector}" data is not an array, converting:`, sectorData[sector]);
                         sectorData[sector] = [];
                     }
                     
@@ -4355,33 +4229,15 @@
                 // Final validation: ensure all sectors have arrays
                 Object.keys(sectorData).forEach(sector => {
                     if (!Array.isArray(sectorData[sector])) {
-                        console.error(`Sector "${sector}" still not an array after processing:`, sectorData[sector]);
                         sectorData[sector] = [];
                     }
                 });
                 
-                console.log('Sector data structure:', sectorData);
-                console.log('Sectors found:', Object.keys(sectorData));
-                console.log('Portfolio data sample:', portfolioData.slice(0, 5).map(item => ({
-                    security: item.security,
-                    sector: item.sector,
-                    marketValue: item.marketValue
-                })));
-                
-                // Debug: Check each sector's data structure
+                // Process each sector's data
                 Object.entries(sectorData).forEach(([sectorName, securities]) => {
-                    console.log(`Sector "${sectorName}":`, {
-                        type: typeof securities,
-                        isArray: Array.isArray(securities),
-                        length: securities.length,
-                        securities: securities.map(s => s.security),
-                        totalValue: securities.reduce((sum, s) => sum + s.marketValue, 0)
-                    });
-                    
                     // Special check for single-security sectors
                     if (securities.length === 1) {
-                        console.log(`⚠️ SINGLE-SECURITY SECTOR DETECTED: "${sectorName}" has only "${securities[0].security}"`);
-                        console.log(`This sector might be causing issues in the chart`);
+                        // Handle single security sectors
                     }
                 });
                 
@@ -4437,12 +4293,10 @@
                     }))
                     .sort((a, b) => b.totalValue - a.totalValue);
                 
-                console.log('Sectors sorted by size:', sortedSectors.map(s => `${s.sector}: ${s.totalValue.toFixed(2)}`));
                 
                 // Add Sector nodes in sorted order
                 const sectorIndices = {};
                 sortedSectors.forEach(({ sector }) => {
-                    console.log(`Adding sector: "${sector}" at index ${nodeIndex}`);
                     nodes.push(sector);
                     sectorIndices[sector] = nodeIndex;
                     nodeIndex++;
@@ -4459,7 +4313,6 @@
                         if (percentage >= minPercentageThreshold) {
                             securitiesToShow.add(item.security);
                         } else {
-                            console.log(`Security "${item.security}" (${item.sector}) below threshold: ${percentage.toFixed(3)}% < ${minPercentageThreshold}%`);
                         }
                     }
                 });
@@ -4469,14 +4322,11 @@
                     if (securities.length === 1) {
                         const security = securities[0].security;
                         if (!securitiesToShow.has(security)) {
-                            console.log(`⚠️ FORCING inclusion of single-security sector "${sectorName}": "${security}"`);
                             securitiesToShow.add(security);
                         }
                     }
                 });
                 
-                console.log('Securities above threshold:', Array.from(securitiesToShow));
-                console.log('Total securities found:', securitiesToShow.size);
                 
                 // Then add only those securities as nodes
                 securitiesToShow.forEach(security => {
@@ -4488,10 +4338,7 @@
                         nodes.push(security);
                         securityIndices[security] = nodeIndex;
                         nodeIndex++;
-                        console.log(`Added security: "${security}" at index ${nodeIndex - 1}`);
                     } else {
-                        console.warn(`Skipping "${security}" as it conflicts with sector name. Sector names:`, sectorNames);
-                        console.warn(`Valid sectors:`, Array.from(validSectors));
                     }
                 });
                 
@@ -4505,7 +4352,6 @@
                         target: sectorIndices[sector],
                         value: percentage
                     });
-                    console.log(`Created portfolio link: Portfolio -> ${sector} (${percentage.toFixed(2)}%)`);
                 });
                 
                 // Create links from Sectors to Securities
@@ -4522,10 +4368,7 @@
                                     target: securityIndices[item.security],
                                     value: percentage
                                 });
-                                console.log(`Created link: ${item.sector} -> ${item.security} (${percentage.toFixed(2)}%)`);
                             } else {
-                                console.warn(`Missing indices for link: ${item.sector} -> ${item.security}`);
-                                console.warn(`Sector index: ${sectorIndices[item.sector]}, Security index: ${securityIndices[item.security]}`);
                             }
                         }
                     }
@@ -4538,11 +4381,6 @@
                 sankeyData.link.value = links.map(l => l.value);
                 
                 // Debug: Log the final chart data
-                console.log('Final Sankey chart data:');
-                console.log('Nodes:', nodes);
-                console.log('Links:', links);
-                console.log('Node count:', nodes.length);
-                console.log('Link count:', links.length);
                 
                 // Create color scheme matching the image
                 const sectorColors = {
@@ -4686,7 +4524,6 @@
                             // Remove the empty second group
                             secondGroup.remove();
                             
-                            console.log('Consolidated modebar buttons into single column');
                         }
                         
                         // Add click event listeners for better button functionality
@@ -4696,14 +4533,12 @@
                         if (zoomBtn) {
                             zoomBtn.addEventListener('click', function() {
                                 Plotly.relayout('diversificationChart', {dragmode: 'zoom'});
-                                console.log('Zoom mode activated');
                             });
                         }
                         
                         if (panBtn) {
                             panBtn.addEventListener('click', function() {
                                 Plotly.relayout('diversificationChart', {dragmode: 'pan'});
-                                console.log('Pan mode activated');
                             });
                         }
                     }
@@ -4730,10 +4565,8 @@
                     }
                 }, 200);
                 
-                console.log('Diversification chart created successfully');
                 
             } catch (error) {
-                console.error('Error creating diversification chart:', error);
                 const chartContainer = document.getElementById('diversificationChart');
                 if (chartContainer) {
                     chartContainer.innerHTML = '<p class="text-red-500 text-center">Error creating chart: ' + error.message + '</p>';
@@ -4761,7 +4594,6 @@
                 canvas.style.display = 'block';
             });
             
-            console.log('Applied reasonable chart title spacing');
         });
         
         // Help toggle functionality
@@ -4790,7 +4622,6 @@
                     }
                 });
                 
-                console.log('Help toggle functionality initialized');
             }
         });
 
@@ -4822,7 +4653,6 @@
                     throw new Error('No valid portfolios found in selection');
                 }
                 
-                console.log(`Processing ${validPortfolios.length} valid portfolios for export`);
                 
                 // Ensure JSZip is loaded
                 if (!window.JSZip) {
@@ -4868,10 +4698,8 @@
                 link.click();
                 
                 URL.revokeObjectURL(link.href);
-                console.log(`Exported ${validPortfolios.length} portfolios as ZIP`);
                 
             } catch (error) {
-                console.error('Error creating ZIP file:', error);
                 throw new Error('Failed to create ZIP file: ' + error.message);
             }
         }
@@ -4942,7 +4770,6 @@
                         
                         if (duplicateName) {
                             // Aggregate data instead of overwriting
-                            console.log(`Portfolio "${portfolio.name}" already exists, aggregating data...`);
                             
                             // Get existing portfolio data
                             const existingPortfolio = await getPortfolioFromDB(duplicateName.id);
@@ -4988,7 +4815,6 @@
                                             totalCost: totalCost
                                         });
                                         
-                                        console.log(`*** AGGREGATED ${symbol}: ${existingQuantity} + ${newQuantity} = ${totalQuantity} shares ***`);
                                     } else {
                                         holdingsMap.set(symbol, { ...holding });
                                     }
@@ -4996,18 +4822,15 @@
                                 
                                 // Update portfolio with aggregated holdings
                                 portfolio.holdings = Array.from(holdingsMap.values());
-                                console.log(`*** AGGREGATED PORTFOLIO ${portfolio.name}: ${portfolio.holdings.length} holdings ***`);
                             }
                             
                             // Delete existing portfolio and save aggregated one
                             await deletePortfolioFromDB(duplicateName.id);
-                            console.log(`Deleted existing portfolio: ${duplicateName.name}`);
                         }
                         
                         // Save to database
                         await savePortfolioToDB(portfolio);
                         importedPortfolios.push(portfolio.name);
-                        console.log(`Imported portfolio: ${portfolio.name}`);
                         
                     } catch (error) {
                         errors.push(`Error processing ${fileName}: ${error.message}`);
@@ -5015,14 +4838,11 @@
                 }
                 
                 // Show results in console for production
-                console.log('Import completed!');
                 if (importedPortfolios.length > 0) {
-                    console.log(`Successfully imported: ${importedPortfolios.length} portfolios:`, importedPortfolios);
                     showNotification(`Successfully imported ${importedPortfolios.length} portfolios`, 'success');
                 }
                 
                 if (errors.length > 0) {
-                    console.warn(`Import errors: ${errors.length}`, errors);
                     showNotification(`${errors.length} import errors occurred`, 'warning');
                 }
                 
@@ -5030,7 +4850,6 @@
                 loadPortfolioList();
                 
             } catch (error) {
-                console.error('Error importing portfolios from ZIP:', error);
                 alert('Error importing portfolios: ' + error.message);
             }
         }
@@ -5054,8 +4873,6 @@
                 }
             });
             
-            console.log(`getSelectedPortfolios: Found ${selectedPortfolios.length} selected files, representing ${uniquePortfolios.length} unique portfolios`);
-            console.log('Selected portfolios:', uniquePortfolios);
             
             return uniquePortfolios;
         }
@@ -5098,12 +4915,10 @@
             const checkedCheckboxes = document.querySelectorAll('.portfolio-checkbox:checked');
             const allChecked = allCheckboxes.length > 0 && allCheckboxes.length === checkedCheckboxes.length;
             
-            console.log('Update selection - Total checkboxes:', allCheckboxes.length, 'Checked:', checkedCheckboxes.length, 'All checked:', allChecked);
             
             if (selectAllCheckbox) {
                 selectAllCheckbox.checked = allChecked;
                 selectAllCheckbox.indeterminate = checkedCheckboxes.length > 0 && checkedCheckboxes.length < allCheckboxes.length;
-                console.log('Select all checkbox updated - checked:', selectAllCheckbox.checked, 'indeterminate:', selectAllCheckbox.indeterminate);
             }
             
             if (selectAllTable) {
@@ -5147,7 +4962,6 @@
 
         function selectAllPortfolios(selectAll) {
             const checkboxes = document.querySelectorAll('.portfolio-checkbox');
-            console.log('selectAllPortfolios called with:', selectAll, 'found', checkboxes.length, 'checkboxes');
             
             if (selectAll) {
                 // Select all checkboxes
@@ -5187,7 +5001,6 @@
                 loadPortfolioList();
                 alert(`${selectedIds.length} portfolio(s) deleted successfully`);
             } catch (error) {
-                console.error('Error deleting selected portfolios:', error);
                 alert('Error deleting portfolios: ' + error.message);
             }
         }
@@ -5250,7 +5063,6 @@
                 showNotification(`Comparing portfolios: ${baselinePortfolio.name} (baseline) vs ${comparePortfolio.name} (compare)`, 'success');
                 
             } catch (error) {
-                console.error('Error setting up comparison:', error);
                 showNotification('Error setting up comparison: ' + error.message, 'error');
             }
         }
@@ -5313,7 +5125,6 @@
                     }
                 }
             } catch (error) {
-                console.error('Error exporting portfolios:', error);
                 showNotification(`Export failed: ${error.message}`, 'error');
             }
         }
@@ -5328,7 +5139,6 @@
         const selectAllCheckbox = document.getElementById('selectAllPortfolios');
         if (selectAllCheckbox) {
             selectAllCheckbox.addEventListener('change', function() {
-                console.log('Select all checkbox changed:', this.checked);
                 selectAllPortfolios(this.checked);
                 // Force update after a short delay to ensure DOM is updated
                 setTimeout(() => {
@@ -5540,7 +5350,6 @@
                 cardViewBtn.className = 'px-3 py-1 text-sm font-medium text-blue-600 bg-blue-100 rounded-md border border-blue-200';
                 tableViewBtn.className = 'px-3 py-1 text-sm font-medium text-gray-600 bg-gray-100 rounded-md border border-gray-200 hover:bg-gray-200';
                 
-                console.log('Switched to card view');
             }
         }
 
@@ -5559,7 +5368,6 @@
                 cardViewBtn.className = 'px-3 py-1 text-sm font-medium text-gray-600 bg-gray-100 rounded-md border border-gray-200 hover:bg-gray-200';
                 tableViewBtn.className = 'px-3 py-1 text-sm font-medium text-blue-600 bg-blue-100 rounded-md border border-blue-200';
                 
-                console.log('Switched to table view');
             }
         }
 
@@ -5579,8 +5387,6 @@
                         }
                     });
                     
-                    console.log(`Portfolio Count Debug: ${uniquePortfolios.length} unique portfolios from ${portfolios.length} total uploads`);
-                    console.log('Unique portfolio names:', uniquePortfolios.map(p => p.name));
                     
                     portfolioCountElement.textContent = `${uniquePortfolios.length} portfolios (${portfolios.length} total uploads)`;
                 });
@@ -5627,7 +5433,6 @@
                 showNotification(`Showing price trends for ${selectedPortfolios.length} portfolios`, 'success');
                 
             } catch (error) {
-                console.error('Error showing chart view:', error);
                 showNotification('Error loading chart data: ' + error.message, 'error');
             }
         }
@@ -5792,7 +5597,6 @@
                 colorPill.style.minWidth = '16px';
                 colorPill.style.minHeight = '16px';
                 colorPill.style.display = 'inline-block';
-                console.log(`Stock: ${stock}, Color: ${stockColor}, Element:`, colorPill); // Enhanced debug log
                 label.appendChild(colorPill);
                 
                 // Add portfolio indicator
@@ -6346,7 +6150,6 @@
                 initializeTradingJournalDataTable();
                 
             } catch (error) {
-                console.error('Error loading trading journal data:', error);
                 showNotification('Error loading portfolio data', 'error');
             }
         }
@@ -6622,7 +6425,6 @@
         function initializeTradingJournalDataTable() {
             // Check if jQuery and DataTables are available
             if (typeof $ === 'undefined' || typeof $.fn.DataTable === 'undefined') {
-                console.error('jQuery or DataTables not loaded');
                 return;
             }
             
@@ -6673,12 +6475,9 @@
                                 }
                             }
                         });
-                        console.log('DataTable initialized successfully');
                     } catch (error) {
-                        console.error('Error initializing DataTable:', error);
                     }
                 } else {
-                    console.log('No data to initialize DataTable');
                 }
             }
         }
@@ -7024,7 +6823,6 @@
                 const portfolio = await loadPortfolioFromDB(portfolioId);
                 showTargetPriceManagement(portfolio);
             } catch (error) {
-                console.error('Error loading portfolio for target price management:', error);
                 alert('Error loading portfolio: ' + error.message);
             }
         }
@@ -7052,7 +6850,6 @@
                 targetPriceSection.style.visibility = 'visible';
                 targetPriceSection.style.opacity = '1';
             } else {
-                console.error('❌ Target price section element not found!');
                 return;
             }
             
@@ -7071,14 +6868,12 @@
             const tbody = document.getElementById('targetPriceTableBody');
             
             if (!tbody) {
-                console.error('Target price table body not found!');
                 return;
             }
             
             tbody.innerHTML = '';
 
             if (!portfolio.holdings || portfolio.holdings.length === 0) {
-                console.log('No holdings found in portfolio');
                 tbody.innerHTML = '<tr><td colspan="10" class="px-4 py-8 text-center text-gray-500">No holdings found</td></tr>';
                 return;
             }
@@ -7089,8 +6884,6 @@
                 return quantity > 0;
             });
 
-            console.log('Found holdings:', portfolio.holdings.length);
-            console.log('Valid holdings (quantity > 0):', validHoldings.length);
 
             if (validHoldings.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="10" class="px-4 py-8 text-center text-gray-500">No holdings with quantity > 0 found</td></tr>';
@@ -7344,7 +7137,6 @@
         // Listen for storage changes from other windows/tabs (Target Price Manager)
         window.addEventListener('storage', function(e) {
             if (e.key === 'targetPrices' && e.newValue !== null) {
-                console.log('Target price data updated from Target Price Manager, refreshing...');
                 // Reload target prices data
                 loadSavedTargetPrices();
                 
@@ -7360,7 +7152,6 @@
 
         // Listen for custom events from Target Price Manager (same window)
         window.addEventListener('targetPriceUpdated', function() {
-            console.log('Target price data updated from Target Price Manager (same window), refreshing...');
             // Reload target prices data
             loadSavedTargetPrices();
             
