@@ -292,6 +292,9 @@
                     <button id="stockCalculatorBtn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
                         🧮 Stock Calculator
                     </button>
+                    <button id="targetPriceManagerBtn" class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                        🎯 Target Price Manager
+                    </button>
                 </div>
             </div>
 
@@ -1836,13 +1839,21 @@
                 portfolioManagementBtn.addEventListener('click', showPortfolioManagement);
             }
             
-            // Stock Calculator button
-            const stockCalculatorBtn = document.getElementById('stockCalculatorBtn');
-            if (stockCalculatorBtn) {
-                stockCalculatorBtn.addEventListener('click', function() {
-                    window.open('stock-calculator.html', '_blank');
-                });
-            }
+        // Stock Calculator button
+        const stockCalculatorBtn = document.getElementById('stockCalculatorBtn');
+        if (stockCalculatorBtn) {
+            stockCalculatorBtn.addEventListener('click', function() {
+                window.open('stock-calculator.html', '_blank');
+            });
+        }
+
+        // Target Price Manager button
+        const targetPriceManagerBtn = document.getElementById('targetPriceManagerBtn');
+        if (targetPriceManagerBtn) {
+            targetPriceManagerBtn.addEventListener('click', function() {
+                window.open('target-price-manager.html', '_blank');
+            });
+        }
             
             // Back to Upload button
             
@@ -7329,6 +7340,38 @@
 
         // Initialize target prices on page load
         loadSavedTargetPrices();
+
+        // Listen for storage changes from other windows/tabs (Target Price Manager)
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'targetPrices' && e.newValue !== null) {
+                console.log('Target price data updated from Target Price Manager, refreshing...');
+                // Reload target prices data
+                loadSavedTargetPrices();
+                
+                // If target price management is currently visible, refresh it
+                const targetPriceSection = document.getElementById('targetPriceSection');
+                if (targetPriceSection && !targetPriceSection.classList.contains('hidden')) {
+                    if (currentPortfolioForTargets) {
+                        loadTargetPriceData(currentPortfolioForTargets);
+                    }
+                }
+            }
+        });
+
+        // Listen for custom events from Target Price Manager (same window)
+        window.addEventListener('targetPriceUpdated', function() {
+            console.log('Target price data updated from Target Price Manager (same window), refreshing...');
+            // Reload target prices data
+            loadSavedTargetPrices();
+            
+            // If target price management is currently visible, refresh it
+            const targetPriceSection = document.getElementById('targetPriceSection');
+            if (targetPriceSection && !targetPriceSection.classList.contains('hidden')) {
+                if (currentPortfolioForTargets) {
+                    loadTargetPriceData(currentPortfolioForTargets);
+                }
+            }
+        });
     </script>
 </body>
 </html>
