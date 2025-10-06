@@ -322,7 +322,8 @@
         function clearForm() {
             document.getElementById('stockSymbol').value = '';
             document.getElementById('targetPrice').value = '';
-            document.getElementById('targetDate').value = '';
+            // Reset target date to today instead of clearing it
+            setTodayAsDefaultDate();
         }
 
         // Clear all
@@ -646,14 +647,25 @@
             }
         });
 
+        // Set today's date as default
+        function setTodayAsDefaultDate() {
+            const today = new Date().toISOString().split('T')[0];
+            const dateInput = document.getElementById('targetDate');
+            if (dateInput) {
+                dateInput.value = today;
+                console.log('Target date set to:', today);
+            } else {
+                console.error('Target date input not found');
+            }
+        }
+
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             // Migrate existing data first
             migrateTargetPriceData();
             
             // Set today's date as default
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('targetDate').value = today;
+            setTodayAsDefaultDate();
 
             // Stock symbol autocomplete
             const stockSymbolInput = document.getElementById('stockSymbol');
@@ -681,6 +693,14 @@
 
             // Load saved target prices on page load
             loadTargetPrices();
+            
+            // Ensure date is set (fallback in case of timing issues)
+            setTimeout(() => {
+                const dateInput = document.getElementById('targetDate');
+                if (dateInput && !dateInput.value) {
+                    setTodayAsDefaultDate();
+                }
+            }, 100);
         });
     </script>
 </body>
