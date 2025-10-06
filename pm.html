@@ -6859,14 +6859,14 @@
             const avgProfitPerTrade = totalTrades > 0 ? netPnL / totalTrades : 0;
             
             // Update results display
-            document.getElementById('totalProfit').textContent = `Rs. ${totalProfit.toFixed(2)}`;
-            document.getElementById('totalLoss').textContent = `Rs. ${totalLoss.toFixed(2)}`;
-            document.getElementById('netPnL').textContent = `Rs. ${netPnL.toFixed(2)}`;
-            document.getElementById('winRate').textContent = `${winRate.toFixed(1)}%`;
+            document.getElementById('totalProfit').textContent = `Rs. ${formatNumber(totalProfit)}`;
+            document.getElementById('totalLoss').textContent = `Rs. ${formatNumber(totalLoss)}`;
+            document.getElementById('netPnL').textContent = `Rs. ${formatNumber(netPnL)}`;
+            document.getElementById('winRate').textContent = `${formatNumber(winRate, 1)}%`;
             document.getElementById('totalTrades').textContent = totalTrades.toString();
-            document.getElementById('avgProfitPerTrade').textContent = `Rs. ${avgProfitPerTrade.toFixed(2)}`;
-            document.getElementById('bestTrade').textContent = `Rs. ${bestTrade.toFixed(2)}`;
-            document.getElementById('worstTrade').textContent = `Rs. ${worstTrade.toFixed(2)}`;
+            document.getElementById('avgProfitPerTrade').textContent = `Rs. ${formatNumber(avgProfitPerTrade)}`;
+            document.getElementById('bestTrade').textContent = `Rs. ${formatNumber(bestTrade)}`;
+            document.getElementById('worstTrade').textContent = `Rs. ${formatNumber(worstTrade)}`;
             
             // Show results
             document.getElementById('tradingPerformanceSummary').classList.remove('hidden');
@@ -7121,11 +7121,11 @@
                 
                 row.innerHTML = `
                     <td class="px-4 py-3 text-sm font-medium text-gray-900">${symbol}</td>
-                    <td class="px-4 py-3 text-sm text-gray-600 text-right">${quantity.toFixed(0)}</td>
-                    <td class="px-4 py-3 text-sm text-gray-600 text-right">Rs. ${avgCost.toFixed(2)}</td>
-                    <td class="px-4 py-3 text-sm text-gray-600 text-right">Rs. ${currentPrice.toFixed(2)}</td>
-                    <td class="px-4 py-3 text-sm font-medium text-right ${currentPnLClass}">Rs. ${currentPnL.toFixed(2)}</td>
-                    <td class="px-4 py-3 text-sm font-medium text-right ${currentPnLPercentClass}">${currentPnLPercent.toFixed(2)}%</td>
+                    <td class="px-4 py-3 text-sm text-gray-600 text-right">${formatInteger(quantity)}</td>
+                    <td class="px-4 py-3 text-sm text-gray-600 text-right">Rs. ${formatNumber(avgCost)}</td>
+                    <td class="px-4 py-3 text-sm text-gray-600 text-right">Rs. ${formatNumber(currentPrice)}</td>
+                    <td class="px-4 py-3 text-sm font-medium text-right ${currentPnLClass}">Rs. ${formatNumber(currentPnL)}</td>
+                    <td class="px-4 py-3 text-sm font-medium text-right ${currentPnLPercentClass}">${formatNumber(currentPnLPercent)}%</td>
                     <td class="px-4 py-3 text-right">
                         <input type="number" 
                                class="target-price-input w-20 text-right border border-gray-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500" 
@@ -7252,12 +7252,12 @@
                 const pnlPercentElement = document.getElementById(`target-pnl-percent-${symbol}`);
                 
                 if (pnlElement) {
-                    pnlElement.textContent = `Rs. ${targetPnL.toFixed(2)}`;
+                    pnlElement.textContent = `Rs. ${formatNumber(targetPnL)}`;
                     pnlElement.className = `px-4 py-3 text-sm font-medium text-right ${targetPnL >= 0 ? 'text-green-600' : 'text-red-600'}`;
                 }
                 
                 if (pnlPercentElement) {
-                    pnlPercentElement.textContent = `${targetPnLPercent.toFixed(2)}%`;
+                    pnlPercentElement.textContent = `${formatNumber(targetPnLPercent)}%`;
                     pnlPercentElement.className = `px-4 py-3 text-sm font-medium text-right ${targetPnLPercent >= 0 ? 'text-green-600' : 'text-red-600'}`;
                 }
             } else {
@@ -7309,11 +7309,11 @@
             });
 
             // Update summary display
-            document.getElementById('totalTargetPnL').textContent = `Rs. ${totalTargetPnL.toFixed(2)}`;
+            document.getElementById('totalTargetPnL').textContent = `Rs. ${formatNumber(totalTargetPnL)}`;
             document.getElementById('totalTargetPnL').className = `text-xl font-bold ${totalTargetPnL >= 0 ? 'text-green-600' : 'text-red-600'}`;
             
             const avgTargetPnLPercent = totalWeight > 0 ? totalWeightedPnLPercent / totalWeight : 0;
-            document.getElementById('avgTargetPnLPercent').textContent = `${avgTargetPnLPercent.toFixed(2)}%`;
+            document.getElementById('avgTargetPnLPercent').textContent = `${formatNumber(avgTargetPnLPercent)}%`;
             document.getElementById('avgTargetPnLPercent').className = `text-xl font-bold ${avgTargetPnLPercent >= 0 ? 'text-green-600' : 'text-red-600'}`;
             
             document.getElementById('stocksWithTargets').textContent = stocksWithTargets;
