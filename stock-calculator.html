@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Calculator - Portfolio Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .input-focus:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .profit-text {
+            color: #10b981;
+        }
+        .loss-text {
+            color: #ef4444;
+        }
+        .neutral-text {
+            color: #6b7280;
+        }
+        .sort-icon {
+            margin-left: 0.25rem;
+            font-size: 0.875rem;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+        th:hover .sort-icon {
+            opacity: 1;
+        }
+
+        #symbolSuggestions {
+            border-top: none;
+            border-radius: 0 0 0.5rem 0.5rem;
+        }
+
+        #symbolSuggestions div:first-child {
+            border-radius: 0.5rem 0.5rem 0 0;
+        }
+
+        #symbolSuggestions div:last-child {
+            border-radius: 0 0 0.5rem 0.5rem;
+        }
+
+        #symbolSuggestions div:hover {
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-6">
+        <div class="container mx-auto px-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <button onclick="goBack()" class="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                    </button>
+                    <h1 class="text-3xl font-bold">Stock Calculator</h1>
+                </div>
+                <div class="text-sm opacity-90">
+                    Calculate potential profits and losses
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-6 py-8">
+        <div class="grid grid-cols-1 xl:grid-cols-4 gap-8">
+            <!-- Main Calculator -->
+            <div class="xl:col-span-1">
+                <div class="bg-white rounded-xl card-shadow p-6">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Stock Calculator</h2>
+                            <p class="text-gray-600">Calculate buy/sell returns with brokerage options</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <!-- Stock Symbol -->
+                        <div class="relative">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Stock Symbol</label>
+                            <input type="text" id="stockSymbol" placeholder="e.g., JKH.N" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent input-focus text-sm"
+                                   autocomplete="off">
+                            <div id="symbolSuggestions" class="absolute z-10 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto hidden">
+                                <!-- Suggestions will be populated here -->
+                            </div>
+                        </div>
+
+                        <!-- Quantity -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Quantity (Shares)</label>
+                            <input type="number" id="quantity" placeholder="0" min="0"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent input-focus text-sm">
+                        </div>
+
+                        <!-- Buy Price with Average Toggle -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Buy Price (Rs.)</label>
+                            <div class="flex gap-2">
+                                <input type="number" id="buyPrice" placeholder="0.00" step="0.01" min="0"
+                                       class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent input-focus text-sm">
+                                <div class="flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3">
+                                    <span class="text-xs text-gray-700 mr-2">Avg</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="useAvgPrice" class="sr-only peer">
+                                        <div class="w-8 h-4 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sell Price -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Sell Price (Rs.)</label>
+                            <input type="number" id="sellPrice" placeholder="0.00" step="0.01" min="0"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent input-focus text-sm">
+                        </div>
+                    </div>
+
+                    <!-- Results Display -->
+                    <div id="calculationResults" class="mt-6 hidden">
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div id="resultsContent" class="text-center">
+                                <!-- Results will be displayed here -->
+                            </div>
+                            <div id="saveButtonContainer" class="mt-4 flex justify-center hidden">
+                                <button onclick="saveToTable()" 
+                                        class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors">
+                                    Save to Table
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Brokerage Information -->
+                    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="text-sm text-blue-800 font-medium">Brokerage Information</span>
+                        </div>
+                        <p class="text-sm text-blue-700 mt-1" id="brokerageInfo">1.12% brokerage fee for buy and sell transactions</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Saved Calculations Sidebar -->
+            <div class="xl:col-span-3">
+                <div class="bg-white rounded-xl card-shadow p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-bold text-gray-900">Saved Calculations</h3>
+                        <div class="flex space-x-2">
+                            <button onclick="exportToJSON()" 
+                                    class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors">
+                                Export JSON
+                            </button>
+                            <button onclick="importFromJSON()" 
+                                    class="bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors">
+                                Import JSON
+                            </button>
+                            <button onclick="clearSavedCalculations()" 
+                                    class="text-red-600 hover:text-red-700 text-sm font-medium transition-colors">
+                                Clear All
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Summary Stats -->
+                    <div id="summaryStats" class="mb-4 p-4 bg-gray-50 rounded-lg hidden">
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div class="text-center">
+                                <div class="text-gray-600">Total P&L</div>
+                                <div id="totalPnL" class="text-lg font-semibold">Rs. 0.00</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-gray-600">Avg Return %</div>
+                                <div id="avgReturn" class="text-lg font-semibold">0.00%</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="savedCalculationsTable" class="space-y-3">
+                        <div class="text-center text-gray-500 py-8">
+                            No saved calculations yet
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="mt-8 bg-white rounded-xl card-shadow p-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-4">Quick Actions</h3>
+            <div class="flex justify-center">
+                <button onclick="clearAll()" 
+                        class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-6 rounded-lg transition-colors">
+                    Clear All Fields
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Utility functions
+        function formatNumber(number, decimals = 2) {
+            if (number === null || number === undefined || isNaN(number)) return '0';
+            return new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            }).format(number);
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'LKR',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(amount);
+        }
+
+        // Brokerage fee constant
+        const BROKERAGE_PERCENTAGE = 0.0112; // 1.12%
+
+        // Stock symbols for autocomplete
+        const STOCK_SYMBOLS = [
+            "JKH.N", "COMB.N", "COMB.X", "CTC.N", "DIST.N", "LOLC.N", "DIAL.N", "MELS.N", "HNB.N", "HNB.X",
+            "CARG.N", "LOFC.N", "SAMP.N", "CARS.N", "HAYL.N", "CTHR.N", "LION.N", "SLTL.N", "CCS.N", "VONE.N",
+            "BIL.N", "BUKI.N", "NTB.N", "NTB.X", "HHL.N", "SINS.N", "LFIN.N", "CINS.N", "CINS.X", "DFCC.N",
+            "CFIN.N", "LIOC.N", "SPEN.N", "AEL.N", "CIC.N", "CIC.X", "NDB.N", "SUN.N", "PLC.N", "SEYB.N",
+            "SEYB.X", "GLAS.N", "RICH.N", "BREW.N", "SFCL.N", "RCL.N", "ACL.N", "OSEA.N", "PKME.N", "GREG.N",
+            "UAL.N", "COCR.N", "WATA.N", "LLUB.N", "DIPD.N", "WIND.N", "AHUN.N", "ASIR.N", "TKYO.N", "TKYO.X",
+            "BRWN.N", "KHL.N", "CALH.N", "PALM.N", "TAP.N", "HAYC.N", "PLR.N", "TJL.N", "PABC.N", "RIL.N",
+            "AHPL.N", "VFIN.N", "JINS.N", "LMF.N", "KCAB.N", "CDB.N", "CDB.X", "CFVF.N", "UML.N", "GUAR.N",
+            "AAIC.N", "CTEA.N", "JAT.N", "LAMB.N", "EDEN.N", "FCT.N", "GRAN.N", "LHCL.N", "DIMO.N", "CFLB.N",
+            "LGL.N", "LGL.X", "UBC.N", "VLL.N", "VLL.X", "PAP.N", "MGT.N", "HUNA.N", "HNBF.N", "HNBF.X",
+            "CALT.N", "EBCR.N", "KHC.N", "ABL.N", "HASU.N", "LWL.N", "SIRA.N", "ELPL.N", "NAMU.N", "TILE.N",
+            "TAFL.N", "TRAN.N", "MAL.N", "MAL.X", "SFIN.N", "ALLI.N", "ALUM.N", "VPEL.N", "JETS.N", "PARQ.N",
+            "CINV.N", "ASHO.N", "NHL.N", "AGPL.N", "SERV.N", "GHLL.N", "LGIL.N", "BFN.N", "SHOT.N", "SHOT.X",
+            "AGAL.N", "RCH.N", "CALF.N", "NEH.N", "SHL.N", "UBF.N", "HARI.N", "CBNK.N", "DOCK.N", "CHOT.N",
+            "EAST.N", "CLND.N", "BOGA.N", "LVEF.N", "TPL.N", "SDB.N", "PINS.N", "TAJ.N", "AAF.N", "AAF.P",
+            "MERC.N", "CHL.N", "CHL.X", "AMF.N", "RWSL.N", "COOP.N", "TYRE.N", "BOPL.N", "CSLK.N", "COLO.N",
+            "HPL.N", "AMSL.N", "SMOT.N", "APLA.N", "KVAL.N", "PMB.N", "ODEL.N", "MASK.N", "BFL.N", "BPPL.N",
+            "LCBF.N", "RHL.N", "RHL.X", "ABAN.N", "RENU.N", "ASCO.N", "LPL.N", "LPL.X", "CIND.N", "SOY.N",
+            "SCAP.N", "LCEY.N", "SEMB.N", "SEMB.X", "HELA.N", "CRL.N", "CARE.N", "JKL.N", "AFSL.N", "PACK.N",
+            "BALA.N", "MBSL.N", "LDEV.N", "HUNT.N", "ATL.N", "CONN.N", "LVEN.N", "SDF.N", "ONAL.N", "SHAW.N",
+            "CWM.N", "AGST.N", "AGST.X", "RAL.N", "COCO.N", "COCO.X", "KFP.N", "PHAR.N", "STAF.N", "REXP.N",
+            "LHL.N", "RPBH.N", "CSD.N", "HPWR.N", "RHTL.N", "SINH.N", "LALU.N", "UDPL.N", "BBH.N", "KGAL.N",
+            "HAPU.N", "HBS.N", "KZOO.N", "KOTA.N", "LITE.N", "DPL.N", "CABO.N", "CTLD.N", "CHMX.N", "MARA.N",
+            "TANG.N", "COMD.N", "REEF.N", "HDFC.N", "BERU.N", "CIT.N", "CFI.N", "WAPO.N", "ETWO.N", "ASIY.N",
+            "ATLL.N", "AINS.N", "KAHA.N", "MADU.N", "HEXP.N", "SWAD.N", "HSIG.N", "PEG.N", "CITW.N", "CITH.N",
+            "AUTO.N", "ECL.N", "LUMX.N", "MCPL.N", "UCAR.N", "HPFL.N", "HOPL.N", "TSML.N", "MSL.N", "MFPE.N",
+            "CTBL.N", "ASPH.N", "SIL.N", "BRR.N", "KPHL.N", "EMER.N", "SIGV.N", "TESS.N", "TESS.X", "MRH.N",
+            "CERA.N", "AFS.N", "MHDL.N", "RFL.N", "LPRT.N", "HVA.N", "CSF.N", "MDL.N", "SLND.N", "ACME.N",
+            "ACAP.N", "MULL.N", "GEST.N", "MEL.N", "EXT.N", "EML.N", "CWL.N", "SING.N", "BLUE.N", "CPRT.N",
+            "RGEM.N", "YORK.N", "OFEQ.N", "PARA.N"
+        ];
+
+        // Global variable to store current calculation
+        let currentCalculation = null;
+
+        // Autocomplete functionality
+        function showSuggestions(input, suggestions) {
+            const suggestionsDiv = document.getElementById('symbolSuggestions');
+            
+            if (suggestions.length === 0) {
+                suggestionsDiv.classList.add('hidden');
+                return;
+            }
+            
+            suggestionsDiv.innerHTML = suggestions.map(symbol => 
+                `<div class="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm" onclick="selectSymbol('${symbol}')">${symbol}</div>`
+            ).join('');
+            
+            suggestionsDiv.classList.remove('hidden');
+        }
+
+        function selectSymbol(symbol) {
+            document.getElementById('stockSymbol').value = symbol;
+            document.getElementById('symbolSuggestions').classList.add('hidden');
+            autoCalculate();
+        }
+
+        function filterSymbols(input) {
+            if (input.length < 1) {
+                return [];
+            }
+            
+            return STOCK_SYMBOLS.filter(symbol => 
+                symbol.toLowerCase().includes(input.toLowerCase())
+            ).slice(0, 10); // Limit to 10 suggestions
+        }
+
+        // Auto-calculate function
+        function autoCalculate() {
+            const symbol = document.getElementById('stockSymbol').value.trim();
+            const quantity = parseInt(document.getElementById('quantity').value) || 0;
+            const buyPrice = parseFloat(document.getElementById('buyPrice').value) || 0;
+            const sellPrice = parseFloat(document.getElementById('sellPrice').value) || 0;
+            const useAvgPrice = document.getElementById('useAvgPrice').checked;
+
+            // Check if all required fields are filled
+            if (symbol && quantity > 0 && buyPrice > 0) {
+                // Calculate results
+                currentCalculation = calculateResults(symbol, quantity, buyPrice, sellPrice, useAvgPrice);
+                
+                // Display results
+                displayResults(currentCalculation);
+                
+                // Show save button if all fields are complete
+                if (sellPrice > 0) {
+                    document.getElementById('saveButtonContainer').classList.remove('hidden');
+                } else {
+                    document.getElementById('saveButtonContainer').classList.add('hidden');
+                }
+            } else {
+                // Hide results if not all required fields are filled
+                document.getElementById('calculationResults').classList.add('hidden');
+                document.getElementById('saveButtonContainer').classList.add('hidden');
+                currentCalculation = null;
+            }
+        }
+
+        // Display calculation results
+        function displayResults(results) {
+            const resultsDiv = document.getElementById('calculationResults');
+            const contentDiv = document.getElementById('resultsContent');
+            
+            const profitClass = results.profit >= 0 ? 'profit-text' : 'loss-text';
+            const profitIcon = results.profit >= 0 ? '↗' : '↘';
+            
+            if (results.sellPrice > 0) {
+                contentDiv.innerHTML = `
+                    <div class="space-y-2">
+                        <div class="text-2xl font-bold ${profitClass}">
+                            ${profitIcon} ${results.profit >= 0 ? '+' : ''}Rs. ${formatNumber(Math.abs(results.profit))}
+                        </div>
+                        <div class="text-lg ${profitClass} font-semibold">
+                            ${results.profit >= 0 ? '+' : ''}${formatNumber(results.profitPercent)}%
+                        </div>
+                    </div>
+                `;
+            } else {
+                contentDiv.innerHTML = `
+                    <div class="space-y-2">
+                        <div class="text-lg text-gray-600">Buy Cost: Rs. ${formatNumber(results.buyCost)}</div>
+                        <div class="text-sm text-gray-500">
+                            Enter sell price to see P&L
+                        </div>
+                    </div>
+                `;
+            }
+            
+            resultsDiv.classList.remove('hidden');
+        }
+
+        // Save current calculation to table
+        function saveToTable() {
+            if (!currentCalculation) {
+                alert('Please calculate first before saving');
+                return;
+            }
+            
+            // Save to localStorage
+            const savedCalculations = JSON.parse(localStorage.getItem('stockCalculations') || '[]');
+            savedCalculations.unshift(currentCalculation);
+            localStorage.setItem('stockCalculations', JSON.stringify(savedCalculations));
+            
+            // Refresh the table
+            loadSavedCalculations();
+            
+            // Hide results and clear form
+            document.getElementById('calculationResults').classList.add('hidden');
+            clearForm();
+            currentCalculation = null;
+        }
+
+        // Calculate all results
+        function calculateResults(symbol, quantity, buyPrice, sellPrice, useAvgPrice) {
+            const buyGrossValue = buyPrice * quantity;
+            const buyBrokerage = useAvgPrice ? 0 : buyGrossValue * BROKERAGE_PERCENTAGE;
+            const buyCost = buyGrossValue + buyBrokerage;
+            
+            let sellBrokerage = 0;
+            let sellValue = 0;
+            let profit = 0;
+            let profitPercent = 0;
+            
+            if (sellPrice > 0) {
+                const sellGrossValue = sellPrice * quantity;
+                sellBrokerage = sellGrossValue * BROKERAGE_PERCENTAGE; // Always apply brokerage to sell
+                sellValue = sellGrossValue - sellBrokerage;
+                profit = sellValue - buyCost;
+                profitPercent = (profit / buyCost) * 100;
+            }
+            
+            return {
+                id: Date.now().toString(),
+                timestamp: new Date().toISOString(),
+                symbol,
+                quantity,
+                buyPrice,
+                sellPrice,
+                buyBrokerage,
+                buyCost,
+                sellBrokerage,
+                sellValue,
+                profit,
+                profitPercent,
+                useAvgPrice
+            };
+        }
+
+
+        // Clear form after saving
+        function clearForm() {
+            document.getElementById('stockSymbol').value = '';
+            document.getElementById('quantity').value = '';
+            document.getElementById('buyPrice').value = '';
+            document.getElementById('sellPrice').value = '';
+            document.getElementById('useAvgPrice').checked = false;
+            updateBrokerageInfo();
+            autoCalculate();
+        }
+
+        // Utility functions
+        function clearAll() {
+            document.getElementById('stockSymbol').value = '';
+            document.getElementById('quantity').value = '';
+            document.getElementById('buyPrice').value = '';
+            document.getElementById('sellPrice').value = '';
+            document.getElementById('useAvgPrice').checked = false;
+            document.getElementById('calculationResults').classList.add('hidden');
+            document.getElementById('saveButtonContainer').classList.add('hidden');
+            currentCalculation = null;
+            updateBrokerageInfo();
+        }
+
+        // Sorting functionality
+        let sortDirection = {};
+        
+        function sortTable(columnIndex) {
+            const table = document.getElementById('calculationsTable');
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            // Toggle sort direction
+            sortDirection[columnIndex] = sortDirection[columnIndex] === 'asc' ? 'desc' : 'asc';
+            const isAsc = sortDirection[columnIndex] === 'asc';
+            
+            rows.sort((a, b) => {
+                let aVal, bVal;
+                
+                if (columnIndex === 0) { // Symbol column
+                    aVal = a.cells[0].textContent.trim();
+                    bVal = b.cells[0].textContent.trim();
+                } else {
+                    aVal = parseFloat(a.cells[columnIndex].getAttribute('data-sort')) || 0;
+                    bVal = parseFloat(b.cells[columnIndex].getAttribute('data-sort')) || 0;
+                }
+                
+                if (aVal < bVal) return isAsc ? -1 : 1;
+                if (aVal > bVal) return isAsc ? 1 : -1;
+                return 0;
+            });
+            
+            // Clear tbody and append sorted rows
+            tbody.innerHTML = '';
+            rows.forEach(row => tbody.appendChild(row));
+            
+            // Update header arrows
+            const headers = table.querySelectorAll('th');
+            headers.forEach((header, index) => {
+                const sortIcon = header.querySelector('.sort-icon');
+                if (index === columnIndex) {
+                    sortIcon.textContent = isAsc ? '↑' : '↓';
+                } else {
+                    sortIcon.textContent = '⇅';
+                }
+            });
+        }
+
+        // Update summary statistics
+        function updateSummaryStats(calculations) {
+            const completedCalculations = calculations.filter(calc => calc.sellPrice > 0);
+            
+            if (completedCalculations.length === 0) {
+                document.getElementById('totalPnL').textContent = 'Rs. 0.00';
+                document.getElementById('avgReturn').textContent = '0.00%';
+                return;
+            }
+            
+            const totalPnL = completedCalculations.reduce((sum, calc) => sum + (calc.profit || 0), 0);
+            const avgReturn = completedCalculations.reduce((sum, calc) => sum + (calc.profitPercent || 0), 0) / completedCalculations.length;
+            
+            const totalPnLClass = totalPnL >= 0 ? 'profit-text' : 'loss-text';
+            const avgReturnClass = avgReturn >= 0 ? 'profit-text' : 'loss-text';
+            
+            document.getElementById('totalPnL').textContent = `${totalPnL >= 0 ? '+' : ''}Rs. ${formatNumber(Math.abs(totalPnL))}`;
+            document.getElementById('totalPnL').className = `text-lg font-semibold ${totalPnLClass}`;
+            
+            document.getElementById('avgReturn').textContent = `${avgReturn >= 0 ? '+' : ''}${formatNumber(avgReturn)}%`;
+            document.getElementById('avgReturn').className = `text-lg font-semibold ${avgReturnClass}`;
+        }
+
+        // Export to JSON
+        function exportToJSON() {
+            const savedCalculations = JSON.parse(localStorage.getItem('stockCalculations') || '[]');
+            const dataStr = JSON.stringify(savedCalculations, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `stock-calculations-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+        }
+
+        // Import from JSON
+        function importFromJSON() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const importedData = JSON.parse(e.target.result);
+                            if (Array.isArray(importedData)) {
+                                const existingCalculations = JSON.parse(localStorage.getItem('stockCalculations') || '[]');
+                                const mergedCalculations = [...existingCalculations, ...importedData];
+                                localStorage.setItem('stockCalculations', JSON.stringify(mergedCalculations));
+                                loadSavedCalculations();
+                                alert(`Successfully imported ${importedData.length} calculations!`);
+                            } else {
+                                alert('Invalid JSON format. Please select a valid calculations file.');
+                            }
+                        } catch (error) {
+                            alert('Error reading file. Please make sure it\'s a valid JSON file.');
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        }
+
+        // Load saved calculations
+        function loadSavedCalculations() {
+            const savedCalculations = JSON.parse(localStorage.getItem('stockCalculations') || '[]');
+            const tableDiv = document.getElementById('savedCalculationsTable');
+            const summaryStats = document.getElementById('summaryStats');
+            
+            if (savedCalculations.length === 0) {
+                tableDiv.innerHTML = '<div class="text-center text-gray-500 py-8">No saved calculations yet</div>';
+                summaryStats.classList.add('hidden');
+                return;
+            }
+
+            // Show summary stats
+            summaryStats.classList.remove('hidden');
+            updateSummaryStats(savedCalculations);
+
+            tableDiv.innerHTML = `
+                <div class="overflow-x-auto">
+                    <table id="calculationsTable" class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-gray-200 bg-gray-50">
+                                <th class="text-left py-3 px-4 font-semibold text-gray-700 cursor-pointer hover:bg-gray-100" onclick="sortTable(0)">
+                                    Symbol <span class="sort-icon">⇅</span>
+                                </th>
+                                <th class="text-right py-3 px-4 font-semibold text-gray-700 cursor-pointer hover:bg-gray-100" onclick="sortTable(1)">
+                                    Qty <span class="sort-icon">⇅</span>
+                                </th>
+                                <th class="text-right py-3 px-4 font-semibold text-gray-700 cursor-pointer hover:bg-gray-100" onclick="sortTable(2)">
+                                    Buy Price <span class="sort-icon">⇅</span>
+                                </th>
+                                <th class="text-center py-3 px-4 font-semibold text-gray-700 cursor-pointer hover:bg-gray-100" onclick="sortTable(3)">
+                                    Type <span class="sort-icon">⇅</span>
+                                </th>
+                                <th class="text-right py-3 px-4 font-semibold text-gray-700 cursor-pointer hover:bg-gray-100" onclick="sortTable(4)">
+                                    Sell Price <span class="sort-icon">⇅</span>
+                                </th>
+                                <th class="text-right py-3 px-4 font-semibold text-gray-700 cursor-pointer hover:bg-gray-100" onclick="sortTable(5)">
+                                    Profit/Loss <span class="sort-icon">⇅</span>
+                                </th>
+                                <th class="text-right py-3 px-4 font-semibold text-gray-700 cursor-pointer hover:bg-gray-100" onclick="sortTable(6)">
+                                    Return % <span class="sort-icon">⇅</span>
+                                </th>
+                                <th class="text-center py-3 px-4 font-semibold text-gray-700">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${savedCalculations.map(calc => {
+                                const profitClass = calc.profit >= 0 ? 'profit-text' : 'loss-text';
+                                const profitLabel = calc.profit >= 0 ? '+' : '';
+                                const returnLabel = calc.profit >= 0 ? '+' : '';
+                                const buyType = calc.useAvgPrice ? 'Avg' : 'Buy';
+                                
+                                return `
+                                    <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                                        <td class="py-3 px-4 font-semibold text-gray-900">${calc.symbol}</td>
+                                        <td class="py-3 px-4 text-right text-gray-600" data-sort="${calc.quantity}">${formatNumber(calc.quantity)}</td>
+                                        <td class="py-3 px-4 text-right text-gray-600" data-sort="${calc.buyPrice}">Rs. ${formatNumber(calc.buyPrice)}</td>
+                                        <td class="py-3 px-4 text-center" data-sort="${calc.useAvgPrice ? 0 : 1}">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${calc.useAvgPrice ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}">
+                                                ${buyType}
+                                            </span>
+                                        </td>
+                                        <td class="py-3 px-4 text-right text-gray-600" data-sort="${calc.sellPrice || 0}">${calc.sellPrice > 0 ? `Rs. ${formatNumber(calc.sellPrice)}` : '-'}</td>
+                                        <td class="py-3 px-4 text-right ${profitClass} font-semibold" data-sort="${calc.profit || 0}">${calc.sellPrice > 0 ? `${profitLabel}Rs. ${formatNumber(Math.abs(calc.profit))}` : '-'}</td>
+                                        <td class="py-3 px-4 text-right ${profitClass} font-semibold" data-sort="${calc.profitPercent || 0}">${calc.sellPrice > 0 ? `${returnLabel}${formatNumber(calc.profitPercent)}%` : '-'}</td>
+                                        <td class="py-3 px-4 text-center">
+                                            <div class="flex justify-center space-x-1">
+                                                <button onclick="loadCalculation('${calc.id}')" class="text-blue-600 hover:text-blue-700 p-1.5 rounded hover:bg-blue-50 transition-colors" title="Load calculation">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                                    </svg>
+                                                </button>
+                                                <button onclick="deleteCalculation('${calc.id}')" class="text-red-600 hover:text-red-700 p-1.5 rounded hover:bg-red-50 transition-colors" title="Delete calculation">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // Load a saved calculation
+        function loadCalculation(id) {
+            const savedCalculations = JSON.parse(localStorage.getItem('stockCalculations') || '[]');
+            const calc = savedCalculations.find(c => c.id === id);
+            
+            if (calc) {
+                document.getElementById('stockSymbol').value = calc.symbol;
+                document.getElementById('quantity').value = calc.quantity || '';
+                document.getElementById('buyPrice').value = calc.buyPrice;
+                document.getElementById('sellPrice').value = calc.sellPrice || '';
+                document.getElementById('useAvgPrice').checked = calc.useAvgPrice || false;
+                
+                updateBrokerageInfo();
+                autoCalculate();
+            }
+        }
+
+        // Delete a saved calculation
+        function deleteCalculation(id) {
+            if (confirm('Are you sure you want to delete this calculation?')) {
+                const savedCalculations = JSON.parse(localStorage.getItem('stockCalculations') || '[]');
+                const filtered = savedCalculations.filter(c => c.id !== id);
+                localStorage.setItem('stockCalculations', JSON.stringify(filtered));
+                loadSavedCalculations();
+            }
+        }
+
+        // Clear all saved calculations
+        function clearSavedCalculations() {
+            if (confirm('Are you sure you want to clear all saved calculations?')) {
+                localStorage.removeItem('stockCalculations');
+                loadSavedCalculations();
+            }
+        }
+
+        // Update brokerage info based on toggle
+        function updateBrokerageInfo() {
+            const useAvgPrice = document.getElementById('useAvgPrice').checked;
+            const infoElement = document.getElementById('brokerageInfo');
+            
+            if (useAvgPrice) {
+                infoElement.textContent = 'No brokerage fee for buy (Average Price), 1.12% for sell';
+            } else {
+                infoElement.textContent = '1.12% brokerage fee for buy and sell transactions';
+            }
+        }
+
+        function goBack() {
+            window.location.href = 'pm.html';
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle average price toggle
+            document.getElementById('useAvgPrice').addEventListener('change', function() {
+                updateBrokerageInfo();
+                autoCalculate();
+            });
+
+            // Auto-calculate on input changes
+            const inputs = ['quantity', 'buyPrice', 'sellPrice'];
+            inputs.forEach(inputId => {
+                const input = document.getElementById(inputId);
+                if (input) {
+                    input.addEventListener('input', autoCalculate);
+                    input.addEventListener('change', autoCalculate);
+                }
+            });
+
+            // Stock symbol autocomplete
+            const stockSymbolInput = document.getElementById('stockSymbol');
+            if (stockSymbolInput) {
+                stockSymbolInput.addEventListener('input', function(e) {
+                    const input = e.target.value.trim();
+                    const suggestions = filterSymbols(input);
+                    showSuggestions(input, suggestions);
+                    autoCalculate();
+                });
+
+                stockSymbolInput.addEventListener('blur', function() {
+                    // Hide suggestions after a short delay to allow clicking
+                    setTimeout(() => {
+                        document.getElementById('symbolSuggestions').classList.add('hidden');
+                    }, 200);
+                });
+
+                stockSymbolInput.addEventListener('focus', function() {
+                    const input = this.value.trim();
+                    if (input.length > 0) {
+                        const suggestions = filterSymbols(input);
+                        showSuggestions(input, suggestions);
+                    }
+                });
+            }
+
+            // Load saved calculations on page load
+            loadSavedCalculations();
+        });
+    </script>
+</body>
+</html>
