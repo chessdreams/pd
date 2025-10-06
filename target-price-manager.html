@@ -138,10 +138,6 @@
                     <div class="flex items-center justify-between mb-6">
                         <h3 class="text-xl font-bold text-gray-900">Saved Target Prices</h3>
                         <div class="flex space-x-2">
-                            <button onclick="migrateAndRefresh()" 
-                                    class="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors">
-                                Migrate Data
-                            </button>
                             <button onclick="exportToJSON()" 
                                     class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors">
                                 Export JSON
@@ -384,12 +380,10 @@
                 // Save migrated data if needed
                 if (needsMigration) {
                     localStorage.setItem('targetPrices', JSON.stringify(targetPrices));
-                    console.log(`Target price data migrated successfully: ${migratedCount} entries updated`);
                 }
                 
                 return migratedCount;
             } catch (error) {
-                console.error('Error migrating target price data:', error);
                 return 0;
             }
         }
@@ -405,7 +399,6 @@
                     targetPrices = JSON.parse(storedData);
                 }
             } catch (error) {
-                console.error('Error parsing target prices from localStorage:', error);
                 targetPrices = {};
             }
             
@@ -530,7 +523,7 @@
                     document.getElementById('targetDate').value = target.tpSetDate || '';
                 }
             } catch (error) {
-                console.error('Error loading target for editing:', error);
+                // Silent error handling
             }
         }
 
@@ -556,7 +549,7 @@
                     // Trigger a custom event for same-window updates
                     window.dispatchEvent(new CustomEvent('targetPriceUpdated'));
                 } catch (error) {
-                    console.error('Error deleting target:', error);
+                    // Silent error handling
                 }
             }
         }
@@ -627,22 +620,10 @@
             window.location.href = 'pm.html';
         }
 
-        // Migrate data and refresh table
-        function migrateAndRefresh() {
-            const migratedCount = migrateTargetPriceData();
-            loadTargetPrices();
-            
-            if (migratedCount > 0) {
-                alert(`Migration completed! ${migratedCount} target price entries were updated.`);
-            } else {
-                alert('No migration needed. All target price data is already up to date.');
-            }
-        }
 
         // Listen for storage changes from other windows/tabs
         window.addEventListener('storage', function(e) {
             if (e.key === 'targetPrices' && e.newValue !== null) {
-                console.log('Target price data updated from another window, refreshing...');
                 loadTargetPrices();
             }
         });
@@ -653,9 +634,6 @@
             const dateInput = document.getElementById('targetDate');
             if (dateInput) {
                 dateInput.value = today;
-                console.log('Target date set to:', today);
-            } else {
-                console.error('Target date input not found');
             }
         }
 
