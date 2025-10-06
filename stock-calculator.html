@@ -394,9 +394,20 @@
 
         // Calculate all results
         function calculateResults(symbol, quantity, buyPrice, sellPrice, useAvgPrice) {
-            const buyGrossValue = buyPrice * quantity;
-            const buyBrokerage = useAvgPrice ? 0 : buyGrossValue * BROKERAGE_PERCENTAGE;
-            const buyCost = buyGrossValue + buyBrokerage;
+            // Calculate buy cost
+            let buyCost;
+            let buyBrokerage;
+            
+            if (useAvgPrice) {
+                // Average price already includes brokerage, so buyCost is just the gross value
+                buyCost = buyPrice * quantity;
+                buyBrokerage = 0;
+            } else {
+                // Regular buy with brokerage
+                const buyGrossValue = buyPrice * quantity;
+                buyBrokerage = buyGrossValue * BROKERAGE_PERCENTAGE;
+                buyCost = buyGrossValue + buyBrokerage;
+            }
             
             let sellBrokerage = 0;
             let sellValue = 0;
