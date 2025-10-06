@@ -604,8 +604,8 @@
                                 <th class="text-right py-3 px-4 font-semibold text-gray-700 cursor-pointer hover:bg-gray-100" onclick="sortTable(2)">
                                     Buy Price <span class="sort-icon">⇅</span>
                                 </th>
-                                <th class="text-center py-3 px-4 font-semibold text-gray-700 cursor-pointer hover:bg-gray-100" onclick="sortTable(3)">
-                                    Type <span class="sort-icon">⇅</span>
+                                <th class="text-right py-3 px-4 font-semibold text-gray-700 cursor-pointer hover:bg-gray-100" onclick="sortTable(3)">
+                                    Total Cost <span class="sort-icon">⇅</span>
                                 </th>
                                 <th class="text-right py-3 px-4 font-semibold text-gray-700 cursor-pointer hover:bg-gray-100" onclick="sortTable(4)">
                                     Sell Price <span class="sort-icon">⇅</span>
@@ -630,12 +630,15 @@
                                     <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                                         <td class="py-3 px-4 font-semibold text-gray-900">${calc.symbol}</td>
                                         <td class="py-3 px-4 text-right text-gray-600" data-sort="${calc.quantity}">${formatNumber(calc.quantity)}</td>
-                                        <td class="py-3 px-4 text-right text-gray-600" data-sort="${calc.buyPrice}">Rs. ${formatNumber(calc.buyPrice)}</td>
-                                        <td class="py-3 px-4 text-center" data-sort="${calc.useAvgPrice ? 0 : 1}">
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${calc.useAvgPrice ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}">
-                                                ${buyType}
-                                            </span>
+                                        <td class="py-3 px-4 text-right text-gray-600" data-sort="${calc.buyPrice}">
+                                            <div class="flex items-center justify-end space-x-2">
+                                                <span>Rs. ${formatNumber(calc.buyPrice)}</span>
+                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${calc.useAvgPrice ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}">
+                                                    ${buyType}
+                                                </span>
+                                            </div>
                                         </td>
+                                        <td class="py-3 px-4 text-right text-gray-600" data-sort="${calc.buyCost}">Rs. ${formatNumber(calc.buyCost)}</td>
                                         <td class="py-3 px-4 text-right text-gray-600" data-sort="${calc.sellPrice || 0}">${calc.sellPrice > 0 ? `Rs. ${formatNumber(calc.sellPrice)}` : '-'}</td>
                                         <td class="py-3 px-4 text-right ${profitClass} font-semibold" data-sort="${calc.profit || 0}">${calc.sellPrice > 0 ? `${profitLabel}Rs. ${formatNumber(Math.abs(calc.profit))}` : '-'}</td>
                                         <td class="py-3 px-4 text-right ${profitClass} font-semibold" data-sort="${calc.profitPercent || 0}">${calc.sellPrice > 0 ? `${returnLabel}${formatNumber(calc.profitPercent)}%` : '-'}</td>
