@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Target Price Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .input-focus:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .profit-text {
+            color: #10b981;
+        }
+        .loss-text {
+            color: #ef4444;
+        }
+        .neutral-text {
+            color: #6b7280;
+        }
+        .sort-icon {
+            margin-left: 0.25rem;
+            font-size: 0.875rem;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+        th:hover .sort-icon {
+            opacity: 1;
+        }
+        #symbolSuggestions {
+            border-top: none;
+            border-radius: 0 0 0.5rem 0.5rem;
+        }
+        #symbolSuggestions div:first-child {
+            border-radius: 0.5rem 0.5rem 0 0;
+        }
+        #symbolSuggestions div:last-child {
+            border-radius: 0 0 0.5rem 0.5rem;
+        }
+        #symbolSuggestions div:hover {
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-6">
+        <div class="container mx-auto px-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <button onclick="goBack()" class="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                    </button>
+                    <h1 class="text-3xl font-bold">Target Price Manager</h1>
+                </div>
+                <div class="text-sm opacity-90">
+                    Set and manage target prices for your stocks
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-6 py-8">
+        <div class="grid grid-cols-1 xl:grid-cols-4 gap-8">
+            <!-- Target Price Input Form -->
+            <div class="xl:col-span-1">
+                <div class="bg-white rounded-xl card-shadow p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-900">Add Target Price</h2>
+                                <p class="text-gray-600">Set target prices for your stocks</p>
+                            </div>
+                        </div>
+                        <button onclick="clearAll()" 
+                                class="p-3 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors" 
+                                title="Reset all fields">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <!-- Stock Symbol -->
+                        <div class="relative">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Stock Symbol</label>
+                            <input type="text" id="stockSymbol" placeholder="e.g., JKH.N" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent input-focus text-sm"
+                                   autocomplete="off">
+                            <div id="symbolSuggestions" class="absolute z-10 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto hidden">
+                                <!-- Suggestions will be populated here -->
+                            </div>
+                        </div>
+
+                        <!-- Target Price -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Target Price (Rs.)</label>
+                            <input type="number" id="targetPrice" placeholder="0.00" step="0.01" min="0"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent input-focus text-sm">
+                        </div>
+
+                        <!-- Target Date -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Target Date</label>
+                            <input type="date" id="targetDate" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent input-focus text-sm">
+                        </div>
+                    </div>
+
+                    <!-- Save Button -->
+                    <div class="mt-6 flex justify-center">
+                        <button onclick="saveTargetPrice()" 
+                                class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
+                            Save Target Price
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Saved Target Prices Table -->
+            <div class="xl:col-span-3">
+                <div class="bg-white rounded-xl card-shadow p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-bold text-gray-900">Saved Target Prices</h3>
+                        <div class="flex space-x-2">
+                            <button onclick="migrateAndRefresh()" 
+                                    class="bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors">
+                                Migrate Data
+                            </button>
+                            <button onclick="exportToJSON()" 
+                                    class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors">
+                                Export JSON
+                            </button>
+                            <button onclick="importFromJSON()" 
+                                    class="bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors">
+                                Import JSON
+                            </button>
+                            <button onclick="clearAllTargets()" 
+                                    class="text-red-600 hover:text-red-700 text-sm font-medium transition-colors">
+                                Clear All
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="targetPricesTable" class="space-y-3">
+                        <div class="text-center text-gray-500 py-8">
+                            No target prices saved yet
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Stock symbols for autocomplete (both .N and .N0000 formats)
+        const STOCK_SYMBOLS = [
+            "JKH.N", "JKH.N0000", "COMB.N", "COMB.N0000", "COMB.X", "COMB.X0000", "CTC.N", "CTC.N0000", 
+            "DIST.N", "DIST.N0000", "LOLC.N", "LOLC.N0000", "DIAL.N", "DIAL.N0000", "MELS.N", "MELS.N0000", 
+            "HNB.N", "HNB.N0000", "HNB.X", "HNB.X0000", "CARG.N", "CARG.N0000", "LOFC.N", "LOFC.N0000", 
+            "SAMP.N", "SAMP.N0000", "CARS.N", "CARS.N0000", "HAYL.N", "HAYL.N0000", "CTHR.N", "CTHR.N0000", 
+            "LION.N", "LION.N0000", "SLTL.N", "SLTL.N0000", "CCS.N", "CCS.N0000", "VONE.N", "VONE.N0000",
+            "BIL.N", "BIL.N0000", "BUKI.N", "BUKI.N0000", "NTB.N", "NTB.N0000", "NTB.X", "NTB.X0000", 
+            "HHL.N", "HHL.N0000", "SINS.N", "SINS.N0000", "LFIN.N", "LFIN.N0000", "CINS.N", "CINS.N0000", 
+            "CINS.X", "CINS.X0000", "DFCC.N", "DFCC.N0000", "CFIN.N", "CFIN.N0000", "LIOC.N", "LIOC.N0000", 
+            "SPEN.N", "SPEN.N0000", "AEL.N", "AEL.N0000", "CIC.N", "CIC.N0000", "CIC.X", "CIC.X0000", 
+            "NDB.N", "NDB.N0000", "SUN.N", "SUN.N0000", "PLC.N", "PLC.N0000", "SEYB.N", "SEYB.N0000",
+            "SEYB.X", "SEYB.X0000", "GLAS.N", "GLAS.N0000", "RICH.N", "RICH.N0000", "BREW.N", "BREW.N0000", 
+            "SFCL.N", "SFCL.N0000", "RCL.N", "RCL.N0000", "ACL.N", "ACL.N0000", "OSEA.N", "OSEA.N0000", 
+            "PKME.N", "PKME.N0000", "GREG.N", "GREG.N0000", "UAL.N", "UAL.N0000", "COCR.N", "COCR.N0000", 
+            "WATA.N", "WATA.N0000", "LLUB.N", "LLUB.N0000", "DIPD.N", "DIPD.N0000", "WIND.N", "WIND.N0000", 
+            "AHUN.N", "AHUN.N0000", "ASIR.N", "ASIR.N0000", "TKYO.N", "TKYO.N0000", "TKYO.X", "TKYO.X0000",
+            "BRWN.N", "BRWN.N0000", "KHL.N", "KHL.N0000", "CALH.N", "CALH.N0000", "PALM.N", "PALM.N0000", 
+            "TAP.N", "TAP.N0000", "HAYC.N", "HAYC.N0000", "PLR.N", "PLR.N0000", "TJL.N", "TJL.N0000", 
+            "PABC.N", "PABC.N0000", "RIL.N", "RIL.N0000", "AHPL.N", "AHPL.N0000", "VFIN.N", "VFIN.N0000", 
+            "JINS.N", "JINS.N0000", "LMF.N", "LMF.N0000", "KCAB.N", "KCAB.N0000", "CDB.N", "CDB.N0000", 
+            "CDB.X", "CDB.X0000", "CFVF.N", "CFVF.N0000", "UML.N", "UML.N0000", "GUAR.N", "GUAR.N0000",
+            "AAIC.N", "AAIC.N0000", "CTEA.N", "CTEA.N0000", "JAT.N", "JAT.N0000", "LAMB.N", "LAMB.N0000", 
+            "EDEN.N", "EDEN.N0000", "FCT.N", "FCT.N0000", "GRAN.N", "GRAN.N0000", "LHCL.N", "LHCL.N0000", 
+            "DIMO.N", "DIMO.N0000", "CFLB.N", "CFLB.N0000", "LGL.N", "LGL.N0000", "LGL.X", "LGL.X0000", 
+            "UBC.N", "UBC.N0000", "VLL.N", "VLL.N0000", "VLL.X", "VLL.X0000", "PAP.N", "PAP.N0000", 
+            "MGT.N", "MGT.N0000", "HUNA.N", "HUNA.N0000", "HNBF.N", "HNBF.N0000", "HNBF.X", "HNBF.X0000",
+            "CALT.N", "CALT.N0000", "EBCR.N", "EBCR.N0000", "KHC.N", "KHC.N0000", "ABL.N", "ABL.N0000", 
+            "HASU.N", "HASU.N0000", "LWL.N", "LWL.N0000", "SIRA.N", "SIRA.N0000", "ELPL.N", "ELPL.N0000", 
+            "NAMU.N", "NAMU.N0000", "TILE.N", "TILE.N0000", "TAFL.N", "TAFL.N0000", "TRAN.N", "TRAN.N0000", 
+            "MAL.N", "MAL.N0000", "MAL.X", "MAL.X0000", "SFIN.N", "SFIN.N0000", "ALLI.N", "ALLI.N0000", 
+            "ALUM.N", "ALUM.N0000", "VPEL.N", "VPEL.N0000", "JETS.N", "JETS.N0000", "PARQ.N", "PARQ.N0000",
+            "CINV.N", "CINV.N0000", "ASHO.N", "ASHO.N0000", "NHL.N", "NHL.N0000", "AGPL.N", "AGPL.N0000", 
+            "SERV.N", "SERV.N0000", "GHLL.N", "GHLL.N0000", "LGIL.N", "LGIL.N0000", "BFN.N", "BFN.N0000", 
+            "SHOT.N", "SHOT.N0000", "SHOT.X", "SHOT.X0000", "AGAL.N", "AGAL.N0000", "RCH.N", "RCH.N0000", 
+            "CALF.N", "CALF.N0000", "NEH.N", "NEH.N0000", "SHL.N", "SHL.N0000", "UBF.N", "UBF.N0000", 
+            "HARI.N", "HARI.N0000", "CBNK.N", "CBNK.N0000", "DOCK.N", "DOCK.N0000", "CHOT.N", "CHOT.N0000",
+            "EAST.N", "EAST.N0000", "CLND.N", "CLND.N0000", "BOGA.N", "BOGA.N0000", "LVEF.N", "LVEF.N0000", 
+            "TPL.N", "TPL.N0000", "SDB.N", "SDB.N0000", "PINS.N", "PINS.N0000", "TAJ.N", "TAJ.N0000", 
+            "AAF.N", "AAF.N0000", "AAF.P", "AAF.P0000", "MERC.N", "MERC.N0000", "CHL.N", "CHL.N0000", 
+            "CHL.X", "CHL.X0000", "AMF.N", "AMF.N0000", "RWSL.N", "RWSL.N0000", "COOP.N", "COOP.N0000", 
+            "TYRE.N", "TYRE.N0000", "BOPL.N", "BOPL.N0000", "CSLK.N", "CSLK.N0000", "COLO.N", "COLO.N0000",
+            "HPL.N", "HPL.N0000", "AMSL.N", "AMSL.N0000", "SMOT.N", "SMOT.N0000", "APLA.N", "APLA.N0000", 
+            "KVAL.N", "KVAL.N0000", "PMB.N", "PMB.N0000", "ODEL.N", "ODEL.N0000", "MASK.N", "MASK.N0000", 
+            "BFL.N", "BFL.N0000", "BPPL.N", "BPPL.N0000", "LCBF.N", "LCBF.N0000", "RHL.N", "RHL.N0000", 
+            "RHL.X", "RHL.X0000", "ABAN.N", "ABAN.N0000", "RENU.N", "RENU.N0000", "ASCO.N", "ASCO.N0000", 
+            "LPL.N", "LPL.N0000", "LPL.X", "LPL.X0000", "CIND.N", "CIND.N0000", "SOY.N", "SOY.N0000",
+            "SCAP.N", "SCAP.N0000", "LCEY.N", "LCEY.N0000", "SEMB.N", "SEMB.N0000", "SEMB.X", "SEMB.X0000", 
+            "HELA.N", "HELA.N0000", "CRL.N", "CRL.N0000", "CARE.N", "CARE.N0000", "JKL.N", "JKL.N0000", 
+            "AFSL.N", "AFSL.N0000", "PACK.N", "PACK.N0000", "BALA.N", "BALA.N0000", "MBSL.N", "MBSL.N0000", 
+            "LDEV.N", "LDEV.N0000", "HUNT.N", "HUNT.N0000", "ATL.N", "ATL.N0000", "CONN.N", "CONN.N0000", 
+            "LVEN.N", "LVEN.N0000", "SDF.N", "SDF.N0000", "ONAL.N", "ONAL.N0000", "SHAW.N", "SHAW.N0000",
+            "CWM.N", "CWM.N0000", "AGST.N", "AGST.N0000", "AGST.X", "AGST.X0000", "RAL.N", "RAL.N0000", 
+            "COCO.N", "COCO.N0000", "COCO.X", "COCO.X0000", "KFP.N", "KFP.N0000", "PHAR.N", "PHAR.N0000", 
+            "STAF.N", "STAF.N0000", "REXP.N", "REXP.N0000", "LHL.N", "LHL.N0000", "RPBH.N", "RPBH.N0000", 
+            "CSD.N", "CSD.N0000", "HPWR.N", "HPWR.N0000", "RHTL.N", "RHTL.N0000", "SINH.N", "SINH.N0000", 
+            "LALU.N", "LALU.N0000", "UDPL.N", "UDPL.N0000", "BBH.N", "BBH.N0000", "KGAL.N", "KGAL.N0000",
+            "HAPU.N", "HAPU.N0000", "HBS.N", "HBS.N0000", "KZOO.N", "KZOO.N0000", "KOTA.N", "KOTA.N0000", 
+            "LITE.N", "LITE.N0000", "DPL.N", "DPL.N0000", "CABO.N", "CABO.N0000", "CTLD.N", "CTLD.N0000", 
+            "CHMX.N", "CHMX.N0000", "MARA.N", "MARA.N0000", "TANG.N", "TANG.N0000", "COMD.N", "COMD.N0000", 
+            "REEF.N", "REEF.N0000", "HDFC.N", "HDFC.N0000", "BERU.N", "BERU.N0000", "CIT.N", "CIT.N0000", 
+            "CFI.N", "CFI.N0000", "WAPO.N", "WAPO.N0000", "ETWO.N", "ETWO.N0000", "ASIY.N", "ASIY.N0000",
+            "ATLL.N", "ATLL.N0000", "AINS.N", "AINS.N0000", "KAHA.N", "KAHA.N0000", "MADU.N", "MADU.N0000", 
+            "HEXP.N", "HEXP.N0000", "SWAD.N", "SWAD.N0000", "HSIG.N", "HSIG.N0000", "PEG.N", "PEG.N0000", 
+            "CITW.N", "CITW.N0000", "CITH.N", "CITH.N0000", "AUTO.N", "AUTO.N0000", "ECL.N", "ECL.N0000", 
+            "LUMX.N", "LUMX.N0000", "MCPL.N", "MCPL.N0000", "UCAR.N", "UCAR.N0000", "HPFL.N", "HPFL.N0000", 
+            "HOPL.N", "HOPL.N0000", "TSML.N", "TSML.N0000", "MSL.N", "MSL.N0000", "MFPE.N", "MFPE.N0000",
+            "CTBL.N", "CTBL.N0000", "ASPH.N", "ASPH.N0000", "SIL.N", "SIL.N0000", "BRR.N", "BRR.N0000", 
+            "KPHL.N", "KPHL.N0000", "EMER.N", "EMER.N0000", "SIGV.N", "SIGV.N0000", "TESS.N", "TESS.N0000", 
+            "TESS.X", "TESS.X0000", "MRH.N", "MRH.N0000", "CERA.N", "CERA.N0000", "AFS.N", "AFS.N0000", 
+            "MHDL.N", "MHDL.N0000", "RFL.N", "RFL.N0000", "LPRT.N", "LPRT.N0000", "HVA.N", "HVA.N0000", 
+            "CSF.N", "CSF.N0000", "MDL.N", "MDL.N0000", "SLND.N", "SLND.N0000", "ACME.N", "ACME.N0000",
+            "ACAP.N", "ACAP.N0000", "MULL.N", "MULL.N0000", "GEST.N", "GEST.N0000", "MEL.N", "MEL.N0000", 
+            "EXT.N", "EXT.N0000", "EML.N", "EML.N0000", "CWL.N", "CWL.N0000", "SING.N", "SING.N0000", 
+            "BLUE.N", "BLUE.N0000", "CPRT.N", "CPRT.N0000", "RGEM.N", "RGEM.N0000", "YORK.N", "YORK.N0000", 
+            "OFEQ.N", "OFEQ.N0000", "PARA.N", "PARA.N0000"
+        ];
+
+        // Utility functions
+        function formatNumber(number, decimals = 2) {
+            if (number === null || number === undefined || isNaN(number)) return '0';
+            return new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            }).format(number);
+        }
+
+        function formatInteger(number) {
+            if (number === null || number === undefined || isNaN(number)) return '0';
+            return new Intl.NumberFormat('en-US').format(Math.round(number));
+        }
+
+        // Autocomplete functionality
+        function showSuggestions(input, suggestions) {
+            const suggestionsDiv = document.getElementById('symbolSuggestions');
+            
+            if (suggestions.length === 0) {
+                suggestionsDiv.classList.add('hidden');
+                return;
+            }
+            
+            suggestionsDiv.innerHTML = suggestions.map(symbol => 
+                `<div class="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm" onclick="selectSymbol('${symbol}')">${symbol}</div>`
+            ).join('');
+            
+            suggestionsDiv.classList.remove('hidden');
+        }
+
+        function selectSymbol(symbol) {
+            document.getElementById('stockSymbol').value = symbol;
+            document.getElementById('symbolSuggestions').classList.add('hidden');
+        }
+
+        function filterSymbols(input) {
+            if (input.length < 1) {
+                return [];
+            }
+            
+            return STOCK_SYMBOLS.filter(symbol => 
+                symbol.toLowerCase().includes(input.toLowerCase())
+            ).slice(0, 10); // Limit to 10 suggestions
+        }
+
+        // Normalize symbol to standard format (.N0000)
+        function normalizeSymbol(symbol) {
+            if (!symbol) return symbol;
+            
+            // If it ends with .N, .X, or .P, add 0000
+            if (symbol.match(/\.(N|X|P)$/)) {
+                return symbol + '0000';
+            }
+            
+            // If it already has 0000, return as is
+            if (symbol.match(/\.(N|X|P)0000$/)) {
+                return symbol;
+            }
+            
+            // If it has some other format, try to normalize
+            if (symbol.includes('.')) {
+                const parts = symbol.split('.');
+                if (parts.length === 2) {
+                    return parts[0] + '.' + parts[1] + '0000';
+                }
+            }
+            
+            return symbol;
+        }
+
+        // Save target price
+        function saveTargetPrice() {
+            const symbol = document.getElementById('stockSymbol').value.trim();
+            const targetPrice = parseFloat(document.getElementById('targetPrice').value) || 0;
+            const targetDate = document.getElementById('targetDate').value;
+
+            if (!symbol || targetPrice <= 0) {
+                alert('Please fill in Stock Symbol and Target Price');
+                return;
+            }
+
+            // Normalize the symbol to .N0000 format
+            const normalizedSymbol = normalizeSymbol(symbol);
+
+            // Get existing target prices
+            const targetPrices = JSON.parse(localStorage.getItem('targetPrices') || '{}');
+            
+            // Add or update target price (compatible with pm.html format)
+            targetPrices[normalizedSymbol] = {
+                targetPrice,
+                tpSetDate: targetDate || new Date().toISOString().split('T')[0],
+                // Keep additional metadata for the target price manager
+                symbol: normalizedSymbol,
+                createdAt: new Date().toISOString()
+            };
+
+            // Save to localStorage
+            localStorage.setItem('targetPrices', JSON.stringify(targetPrices));
+            
+            // Refresh table
+            loadTargetPrices();
+            
+            // Notify parent window to refresh target price data if it exists
+            if (window.opener && window.opener.loadSavedTargetPrices) {
+                window.opener.loadSavedTargetPrices();
+                if (window.opener.loadTargetPriceData && window.opener.currentPortfolioForTargets) {
+                    window.opener.loadTargetPriceData(window.opener.currentPortfolioForTargets);
+                }
+            }
+            
+            // Trigger a custom event for same-window updates
+            window.dispatchEvent(new CustomEvent('targetPriceUpdated'));
+            
+            // Clear form
+            clearForm();
+        }
+
+        // Clear form
+        function clearForm() {
+            document.getElementById('stockSymbol').value = '';
+            document.getElementById('targetPrice').value = '';
+            document.getElementById('targetDate').value = '';
+        }
+
+        // Clear all
+        function clearAll() {
+            clearForm();
+        }
+
+        // Migrate existing target price data to new format
+        function migrateTargetPriceData() {
+            try {
+                const storedData = localStorage.getItem('targetPrices');
+                if (!storedData) return 0;
+                
+                const targetPrices = JSON.parse(storedData);
+                let needsMigration = false;
+                let migratedCount = 0;
+                
+                // Check if any entries need migration
+                Object.keys(targetPrices).forEach(symbol => {
+                    const target = targetPrices[symbol];
+                    if (target && typeof target === 'object') {
+                        let entryMigrated = false;
+                        
+                        // If it has targetPrice but no tpSetDate, migrate it
+                        if (target.targetPrice && !target.tpSetDate) {
+                            target.tpSetDate = target.targetDate || new Date().toISOString().split('T')[0];
+                            needsMigration = true;
+                            entryMigrated = true;
+                        }
+                        
+                        // If it has targetDate but no tpSetDate, migrate it
+                        if (target.targetDate && !target.tpSetDate) {
+                            target.tpSetDate = target.targetDate;
+                            needsMigration = true;
+                            entryMigrated = true;
+                        }
+                        
+                        // Ensure symbol field exists
+                        if (!target.symbol) {
+                            target.symbol = symbol;
+                            needsMigration = true;
+                            entryMigrated = true;
+                        }
+                        
+                        // Ensure createdAt field exists
+                        if (!target.createdAt) {
+                            target.createdAt = new Date().toISOString();
+                            needsMigration = true;
+                            entryMigrated = true;
+                        }
+                        
+                        if (entryMigrated) {
+                            migratedCount++;
+                        }
+                    }
+                });
+                
+                // Save migrated data if needed
+                if (needsMigration) {
+                    localStorage.setItem('targetPrices', JSON.stringify(targetPrices));
+                    console.log(`Target price data migrated successfully: ${migratedCount} entries updated`);
+                }
+                
+                return migratedCount;
+            } catch (error) {
+                console.error('Error migrating target price data:', error);
+                return 0;
+            }
+        }
+
+        // Load target prices
+        function loadTargetPrices() {
+            let targetPrices = {};
+            const tableDiv = document.getElementById('targetPricesTable');
+            
+            try {
+                const storedData = localStorage.getItem('targetPrices');
+                if (storedData) {
+                    targetPrices = JSON.parse(storedData);
+                }
+            } catch (error) {
+                console.error('Error parsing target prices from localStorage:', error);
+                targetPrices = {};
+            }
+            
+            const targetPricesArray = Object.values(targetPrices).filter(target => 
+                target && typeof target === 'object' && target.symbol
+            );
+            
+            if (targetPricesArray.length === 0) {
+                tableDiv.innerHTML = '<div class="text-center text-gray-500 py-8">No target prices saved yet</div>';
+                return;
+            }
+
+            tableDiv.innerHTML = `
+                <div class="overflow-x-auto">
+                    <table id="targetPricesTableData" class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-gray-200 bg-gray-50">
+                                <th class="text-left py-3 px-4 font-semibold text-gray-700 cursor-pointer hover:bg-gray-100" onclick="sortTable(0)">
+                                    Symbol <span class="sort-icon">⇅</span>
+                                </th>
+                                <th class="text-right py-3 px-4 font-semibold text-gray-700 cursor-pointer hover:bg-gray-100" onclick="sortTable(1)">
+                                    Target Price <span class="sort-icon">⇅</span>
+                                </th>
+                                <th class="text-center py-3 px-4 font-semibold text-gray-700 cursor-pointer hover:bg-gray-100" onclick="sortTable(2)">
+                                    TP Set Date <span class="sort-icon">⇅</span>
+                                </th>
+                                <th class="text-center py-3 px-4 font-semibold text-gray-700 cursor-pointer hover:bg-gray-100" onclick="sortTable(3)">
+                                    Created <span class="sort-icon">⇅</span>
+                                </th>
+                                <th class="text-center py-3 px-4 font-semibold text-gray-700">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${targetPricesArray.filter(target => target && target.symbol).map(target => {
+                                const displaySymbol = target.symbol ? target.symbol.replace(/0000$/, '') : 'Unknown';
+                                return `
+                                <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                                    <td class="py-3 px-4 font-semibold text-gray-900">${displaySymbol}</td>
+                                    <td class="py-3 px-4 text-right text-gray-600" data-sort="${target.targetPrice || 0}">Rs. ${formatNumber(target.targetPrice || 0)}</td>
+                                    <td class="py-3 px-4 text-center text-gray-600" data-sort="${target.tpSetDate || ''}">${target.tpSetDate || 'N/A'}</td>
+                                    <td class="py-3 px-4 text-center text-gray-500" data-sort="${target.createdAt ? new Date(target.createdAt).getTime() : 0}">${target.createdAt ? new Date(target.createdAt).toLocaleDateString() : 'N/A'}</td>
+                                    <td class="py-3 px-4 text-center">
+                                        <div class="flex justify-center space-x-1">
+                                            <button onclick="editTarget('${target.symbol || ''}')" class="text-blue-600 hover:text-blue-700 p-1.5 rounded hover:bg-blue-50 transition-colors" title="Edit target">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                            </button>
+                                            <button onclick="deleteTarget('${target.symbol || ''}')" class="text-red-600 hover:text-red-700 p-1.5 rounded hover:bg-red-50 transition-colors" title="Delete target">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // Sorting functionality
+        let sortDirection = {};
+        
+        function sortTable(columnIndex) {
+            const table = document.getElementById('targetPricesTableData');
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            // Toggle sort direction
+            sortDirection[columnIndex] = sortDirection[columnIndex] === 'asc' ? 'desc' : 'asc';
+            const isAsc = sortDirection[columnIndex] === 'asc';
+            
+            rows.sort((a, b) => {
+                let aVal, bVal;
+                
+                if (columnIndex === 0) { // Symbol column
+                    aVal = a.cells[0].textContent.trim();
+                    bVal = b.cells[0].textContent.trim();
+                } else {
+                    aVal = parseFloat(a.cells[columnIndex].getAttribute('data-sort')) || 0;
+                    bVal = parseFloat(b.cells[columnIndex].getAttribute('data-sort')) || 0;
+                }
+                
+                if (aVal < bVal) return isAsc ? -1 : 1;
+                if (aVal > bVal) return isAsc ? 1 : -1;
+                return 0;
+            });
+            
+            // Clear tbody and append sorted rows
+            tbody.innerHTML = '';
+            rows.forEach(row => tbody.appendChild(row));
+            
+            // Update header arrows
+            const headers = table.querySelectorAll('th');
+            headers.forEach((header, index) => {
+                const sortIcon = header.querySelector('.sort-icon');
+                if (index === columnIndex) {
+                    sortIcon.textContent = isAsc ? '↑' : '↓';
+                } else {
+                    sortIcon.textContent = '⇅';
+                }
+            });
+        }
+
+        // Edit target
+        function editTarget(symbol) {
+            if (!symbol) return;
+            
+            try {
+                const targetPrices = JSON.parse(localStorage.getItem('targetPrices') || '{}');
+                const target = targetPrices[symbol];
+                
+                if (target && target.symbol) {
+                    // Display the symbol in the shorter format for editing
+                    const displaySymbol = target.symbol.replace(/0000$/, '');
+                    document.getElementById('stockSymbol').value = displaySymbol;
+                    document.getElementById('targetPrice').value = target.targetPrice || '';
+                    document.getElementById('targetDate').value = target.tpSetDate || '';
+                }
+            } catch (error) {
+                console.error('Error loading target for editing:', error);
+            }
+        }
+
+        // Delete target
+        function deleteTarget(symbol) {
+            if (!symbol) return;
+            
+            if (confirm(`Are you sure you want to delete the target price for ${symbol}?`)) {
+                try {
+                    const targetPrices = JSON.parse(localStorage.getItem('targetPrices') || '{}');
+                    delete targetPrices[symbol];
+                    localStorage.setItem('targetPrices', JSON.stringify(targetPrices));
+                    loadTargetPrices();
+                    
+                    // Notify parent window to refresh target price data if it exists
+                    if (window.opener && window.opener.loadSavedTargetPrices) {
+                        window.opener.loadSavedTargetPrices();
+                        if (window.opener.loadTargetPriceData && window.opener.currentPortfolioForTargets) {
+                            window.opener.loadTargetPriceData(window.opener.currentPortfolioForTargets);
+                        }
+                    }
+                    
+                    // Trigger a custom event for same-window updates
+                    window.dispatchEvent(new CustomEvent('targetPriceUpdated'));
+                } catch (error) {
+                    console.error('Error deleting target:', error);
+                }
+            }
+        }
+
+        // Clear all targets
+        function clearAllTargets() {
+            if (confirm('Are you sure you want to clear all target prices?')) {
+                localStorage.removeItem('targetPrices');
+                loadTargetPrices();
+                
+                // Notify parent window to refresh target price data if it exists
+                if (window.opener && window.opener.loadSavedTargetPrices) {
+                    window.opener.loadSavedTargetPrices();
+                    if (window.opener.loadTargetPriceData && window.opener.currentPortfolioForTargets) {
+                        window.opener.loadTargetPriceData(window.opener.currentPortfolioForTargets);
+                    }
+                }
+                
+                // Trigger a custom event for same-window updates
+                window.dispatchEvent(new CustomEvent('targetPriceUpdated'));
+            }
+        }
+
+        // Export to JSON
+        function exportToJSON() {
+            const targetPrices = JSON.parse(localStorage.getItem('targetPrices') || '{}');
+            const dataStr = JSON.stringify(targetPrices, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `target-prices-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+        }
+
+        // Import from JSON
+        function importFromJSON() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const importedData = JSON.parse(e.target.result);
+                            if (typeof importedData === 'object') {
+                                const existingTargets = JSON.parse(localStorage.getItem('targetPrices') || '{}');
+                                const mergedTargets = {...existingTargets, ...importedData};
+                                localStorage.setItem('targetPrices', JSON.stringify(mergedTargets));
+                                loadTargetPrices();
+                                alert(`Successfully imported ${Object.keys(importedData).length} target prices!`);
+                            } else {
+                                alert('Invalid JSON format. Please select a valid target prices file.');
+                            }
+                        } catch (error) {
+                            alert('Error reading file. Please make sure it\'s a valid JSON file.');
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        }
+
+        function goBack() {
+            window.location.href = 'pm.html';
+        }
+
+        // Migrate data and refresh table
+        function migrateAndRefresh() {
+            const migratedCount = migrateTargetPriceData();
+            loadTargetPrices();
+            
+            if (migratedCount > 0) {
+                alert(`Migration completed! ${migratedCount} target price entries were updated.`);
+            } else {
+                alert('No migration needed. All target price data is already up to date.');
+            }
+        }
+
+        // Listen for storage changes from other windows/tabs
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'targetPrices' && e.newValue !== null) {
+                console.log('Target price data updated from another window, refreshing...');
+                loadTargetPrices();
+            }
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Migrate existing data first
+            migrateTargetPriceData();
+            
+            // Set today's date as default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('targetDate').value = today;
+
+            // Stock symbol autocomplete
+            const stockSymbolInput = document.getElementById('stockSymbol');
+            if (stockSymbolInput) {
+                stockSymbolInput.addEventListener('input', function(e) {
+                    const input = e.target.value.trim();
+                    const suggestions = filterSymbols(input);
+                    showSuggestions(input, suggestions);
+                });
+
+                stockSymbolInput.addEventListener('blur', function() {
+                    setTimeout(() => {
+                        document.getElementById('symbolSuggestions').classList.add('hidden');
+                    }, 200);
+                });
+
+                stockSymbolInput.addEventListener('focus', function() {
+                    const input = this.value.trim();
+                    if (input.length > 0) {
+                        const suggestions = filterSymbols(input);
+                        showSuggestions(input, suggestions);
+                    }
+                });
+            }
+
+            // Load saved target prices on page load
+            loadTargetPrices();
+        });
+    </script>
+</body>
+</html>
