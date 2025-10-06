@@ -168,82 +168,45 @@
     </div>
 
     <script>
-        // Stock symbols for autocomplete (both .N and .N0000 formats)
+        // Stock symbols for autocomplete (unique symbols only)
         const STOCK_SYMBOLS = [
-            "JKH.N", "JKH.N", "COMB.N", "COMB.N", "COMB.X", "COMB.X", "CTC.N", "CTC.N", 
-            "DIST.N", "DIST.N", "LOLC.N", "LOLC.N", "DIAL.N", "DIAL.N", "MELS.N", "MELS.N", 
-            "HNB.N", "HNB.N", "HNB.X", "HNB.X", "CARG.N", "CARG.N", "LOFC.N", "LOFC.N", 
-            "SAMP.N", "SAMP.N", "CARS.N", "CARS.N", "HAYL.N", "HAYL.N", "CTHR.N", "CTHR.N", 
-            "LION.N", "LION.N", "SLTL.N", "SLTL.N", "CCS.N", "CCS.N", "VONE.N", "VONE.N",
-            "BIL.N", "BIL.N", "BUKI.N", "BUKI.N", "NTB.N", "NTB.N", "NTB.X", "NTB.X", 
-            "HHL.N", "HHL.N", "SINS.N", "SINS.N", "LFIN.N", "LFIN.N", "CINS.N", "CINS.N", 
-            "CINS.X", "CINS.X", "DFCC.N", "DFCC.N", "CFIN.N", "CFIN.N", "LIOC.N", "LIOC.N", 
-            "SPEN.N", "SPEN.N", "AEL.N", "AEL.N", "CIC.N", "CIC.N", "CIC.X", "CIC.X", 
-            "NDB.N", "NDB.N", "SUN.N", "SUN.N", "PLC.N", "PLC.N", "SEYB.N", "SEYB.N",
-            "SEYB.X", "SEYB.X", "GLAS.N", "GLAS.N", "RICH.N", "RICH.N", "BREW.N", "BREW.N", 
-            "SFCL.N", "SFCL.N", "RCL.N", "RCL.N", "ACL.N", "ACL.N", "OSEA.N", "OSEA.N", 
-            "PKME.N", "PKME.N", "GREG.N", "GREG.N", "UAL.N", "UAL.N", "COCR.N", "COCR.N", 
-            "WATA.N", "WATA.N", "LLUB.N", "LLUB.N", "DIPD.N", "DIPD.N", "WIND.N", "WIND.N", 
-            "AHUN.N", "AHUN.N", "ASIR.N", "ASIR.N", "TKYO.N", "TKYO.N", "TKYO.X", "TKYO.X",
-            "BRWN.N", "BRWN.N", "KHL.N", "KHL.N", "CALH.N", "CALH.N", "PALM.N", "PALM.N", 
-            "TAP.N", "TAP.N", "HAYC.N", "HAYC.N", "PLR.N", "PLR.N", "TJL.N", "TJL.N", 
-            "PABC.N", "PABC.N", "RIL.N", "RIL.N", "AHPL.N", "AHPL.N", "VFIN.N", "VFIN.N", 
-            "JINS.N", "JINS.N", "LMF.N", "LMF.N", "KCAB.N", "KCAB.N", "CDB.N", "CDB.N", 
-            "CDB.X", "CDB.X", "CFVF.N", "CFVF.N", "UML.N", "UML.N", "GUAR.N", "GUAR.N",
-            "AAIC.N", "AAIC.N", "CTEA.N", "CTEA.N", "JAT.N", "JAT.N", "LAMB.N", "LAMB.N", 
-            "EDEN.N", "EDEN.N", "FCT.N", "FCT.N", "GRAN.N", "GRAN.N", "LHCL.N", "LHCL.N", 
-            "DIMO.N", "DIMO.N", "CFLB.N", "CFLB.N", "LGL.N", "LGL.N", "LGL.X", "LGL.X", 
-            "UBC.N", "UBC.N", "VLL.N", "VLL.N", "VLL.X", "VLL.X", "PAP.N", "PAP.N", 
-            "MGT.N", "MGT.N", "HUNA.N", "HUNA.N", "HNBF.N", "HNBF.N", "HNBF.X", "HNBF.X",
-            "CALT.N", "CALT.N", "EBCR.N", "EBCR.N", "KHC.N", "KHC.N", "ABL.N", "ABL.N", 
-            "HASU.N", "HASU.N", "LWL.N", "LWL.N", "SIRA.N", "SIRA.N", "ELPL.N", "ELPL.N", 
-            "NAMU.N", "NAMU.N", "TILE.N", "TILE.N", "TAFL.N", "TAFL.N", "TRAN.N", "TRAN.N", 
-            "MAL.N", "MAL.N", "MAL.X", "MAL.X", "SFIN.N", "SFIN.N", "ALLI.N", "ALLI.N", 
-            "ALUM.N", "ALUM.N", "VPEL.N", "VPEL.N", "JETS.N", "JETS.N", "PARQ.N", "PARQ.N",
-            "CINV.N", "CINV.N", "ASHO.N", "ASHO.N", "NHL.N", "NHL.N", "AGPL.N", "AGPL.N", 
-            "SERV.N", "SERV.N", "GHLL.N", "GHLL.N", "LGIL.N", "LGIL.N", "BFN.N", "BFN.N", 
-            "SHOT.N", "SHOT.N", "SHOT.X", "SHOT.X", "AGAL.N", "AGAL.N", "RCH.N", "RCH.N", 
-            "CALF.N", "CALF.N", "NEH.N", "NEH.N", "SHL.N", "SHL.N", "UBF.N", "UBF.N", 
-            "HARI.N", "HARI.N", "CBNK.N", "CBNK.N", "DOCK.N", "DOCK.N", "CHOT.N", "CHOT.N",
-            "EAST.N", "EAST.N", "CLND.N", "CLND.N", "BOGA.N", "BOGA.N", "LVEF.N", "LVEF.N", 
-            "TPL.N", "TPL.N", "SDB.N", "SDB.N", "PINS.N", "PINS.N", "TAJ.N", "TAJ.N", 
-            "AAF.N", "AAF.N", "AAF.P", "AAF.P0000", "MERC.N", "MERC.N", "CHL.N", "CHL.N", 
-            "CHL.X", "CHL.X", "AMF.N", "AMF.N", "RWSL.N", "RWSL.N", "COOP.N", "COOP.N", 
-            "TYRE.N", "TYRE.N", "BOPL.N", "BOPL.N", "CSLK.N", "CSLK.N", "COLO.N", "COLO.N",
-            "HPL.N", "HPL.N", "AMSL.N", "AMSL.N", "SMOT.N", "SMOT.N", "APLA.N", "APLA.N", 
-            "KVAL.N", "KVAL.N", "PMB.N", "PMB.N", "ODEL.N", "ODEL.N", "MASK.N", "MASK.N", 
-            "BFL.N", "BFL.N", "BPPL.N", "BPPL.N", "LCBF.N", "LCBF.N", "RHL.N", "RHL.N", 
-            "RHL.X", "RHL.X", "ABAN.N", "ABAN.N", "RENU.N", "RENU.N", "ASCO.N", "ASCO.N", 
-            "LPL.N", "LPL.N", "LPL.X", "LPL.X", "CIND.N", "CIND.N", "SOY.N", "SOY.N",
-            "SCAP.N", "SCAP.N", "LCEY.N", "LCEY.N", "SEMB.N", "SEMB.N", "SEMB.X", "SEMB.X", 
-            "HELA.N", "HELA.N", "CRL.N", "CRL.N", "CARE.N", "CARE.N", "JKL.N", "JKL.N", 
-            "AFSL.N", "AFSL.N", "PACK.N", "PACK.N", "BALA.N", "BALA.N", "MBSL.N", "MBSL.N", 
-            "LDEV.N", "LDEV.N", "HUNT.N", "HUNT.N", "ATL.N", "ATL.N", "CONN.N", "CONN.N", 
-            "LVEN.N", "LVEN.N", "SDF.N", "SDF.N", "ONAL.N", "ONAL.N", "SHAW.N", "SHAW.N",
-            "CWM.N", "CWM.N", "AGST.N", "AGST.N", "AGST.X", "AGST.X", "RAL.N", "RAL.N", 
-            "COCO.N", "COCO.N", "COCO.X", "COCO.X", "KFP.N", "KFP.N", "PHAR.N", "PHAR.N", 
-            "STAF.N", "STAF.N", "REXP.N", "REXP.N", "LHL.N", "LHL.N", "RPBH.N", "RPBH.N", 
-            "CSD.N", "CSD.N", "HPWR.N", "HPWR.N", "RHTL.N", "RHTL.N", "SINH.N", "SINH.N", 
-            "LALU.N", "LALU.N", "UDPL.N", "UDPL.N", "BBH.N", "BBH.N", "KGAL.N", "KGAL.N",
-            "HAPU.N", "HAPU.N", "HBS.N", "HBS.N", "KZOO.N", "KZOO.N", "KOTA.N", "KOTA.N", 
-            "LITE.N", "LITE.N", "DPL.N", "DPL.N", "CABO.N", "CABO.N", "CTLD.N", "CTLD.N", 
-            "CHMX.N", "CHMX.N", "MARA.N", "MARA.N", "TANG.N", "TANG.N", "COMD.N", "COMD.N", 
-            "REEF.N", "REEF.N", "HDFC.N", "HDFC.N", "BERU.N", "BERU.N", "CIT.N", "CIT.N", 
-            "CFI.N", "CFI.N", "WAPO.N", "WAPO.N", "ETWO.N", "ETWO.N", "ASIY.N", "ASIY.N",
-            "ATLL.N", "ATLL.N", "AINS.N", "AINS.N", "KAHA.N", "KAHA.N", "MADU.N", "MADU.N", 
-            "HEXP.N", "HEXP.N", "SWAD.N", "SWAD.N", "HSIG.N", "HSIG.N", "PEG.N", "PEG.N", 
-            "CITW.N", "CITW.N", "CITH.N", "CITH.N", "AUTO.N", "AUTO.N", "ECL.N", "ECL.N", 
-            "LUMX.N", "LUMX.N", "MCPL.N", "MCPL.N", "UCAR.N", "UCAR.N", "HPFL.N", "HPFL.N", 
-            "HOPL.N", "HOPL.N", "TSML.N", "TSML.N", "MSL.N", "MSL.N", "MFPE.N", "MFPE.N",
-            "CTBL.N", "CTBL.N", "ASPH.N", "ASPH.N", "SIL.N", "SIL.N", "BRR.N", "BRR.N", 
-            "KPHL.N", "KPHL.N", "EMER.N", "EMER.N", "SIGV.N", "SIGV.N", "TESS.N", "TESS.N", 
-            "TESS.X", "TESS.X", "MRH.N", "MRH.N", "CERA.N", "CERA.N", "AFS.N", "AFS.N", 
-            "MHDL.N", "MHDL.N", "RFL.N", "RFL.N", "LPRT.N", "LPRT.N", "HVA.N", "HVA.N", 
-            "CSF.N", "CSF.N", "MDL.N", "MDL.N", "SLND.N", "SLND.N", "ACME.N", "ACME.N",
-            "ACAP.N", "ACAP.N", "MULL.N", "MULL.N", "GEST.N", "GEST.N", "MEL.N", "MEL.N", 
-            "EXT.N", "EXT.N", "EML.N", "EML.N", "CWL.N", "CWL.N", "SING.N", "SING.N", 
-            "BLUE.N", "BLUE.N", "CPRT.N", "CPRT.N", "RGEM.N", "RGEM.N", "YORK.N", "YORK.N", 
-            "OFEQ.N", "OFEQ.N", "PARA.N", "PARA.N"
+            "JKH.N", "COMB.N", "COMB.X", "CTC.N", "DIST.N", "LOLC.N", "DIAL.N", "MELS.N", 
+            "HNB.N", "HNB.X", "CARG.N", "LOFC.N", "SAMP.N", "CARS.N", "HAYL.N", "CTHR.N", 
+            "LION.N", "SLTL.N", "CCS.N", "VONE.N", "BIL.N", "BUKI.N", "NTB.N", "NTB.X", 
+            "HHL.N", "SINS.N", "LFIN.N", "CINS.N", "CINS.X", "DFCC.N", "CFIN.N", "LIOC.N", 
+            "SPEN.N", "AEL.N", "CIC.N", "CIC.X", "NDB.N", "SUN.N", "PLC.N", "SEYB.N",
+            "SEYB.X", "GLAS.N", "RICH.N", "BREW.N", "SFCL.N", "RCL.N", "ACL.N", "OSEA.N", 
+            "PKME.N", "GREG.N", "UAL.N", "COCR.N", "WATA.N", "LLUB.N", "DIPD.N", "WIND.N", 
+            "AHUN.N", "ASIR.N", "TKYO.N", "TKYO.X", "BRWN.N", "KHL.N", "CALH.N", "PALM.N", 
+            "TAP.N", "HAYC.N", "PLR.N", "TJL.N", "PABC.N", "RIL.N", "AHPL.N", "VFIN.N", 
+            "JINS.N", "LMF.N", "KCAB.N", "CDB.N", "CDB.X", "CFVF.N", "UML.N", "GUAR.N",
+            "AAIC.N", "CTEA.N", "JAT.N", "LAMB.N", "EDEN.N", "FCT.N", "GRAN.N", "LHCL.N", 
+            "DIMO.N", "CFLB.N", "LGL.N", "LGL.X", "UBC.N", "VLL.N", "VLL.X", "PAP.N", 
+            "MGT.N", "HUNA.N", "HNBF.N", "HNBF.X", "CALT.N", "EBCR.N", "KHC.N", "ABL.N", 
+            "HASU.N", "LWL.N", "SIRA.N", "ELPL.N", "NAMU.N", "TILE.N", "TAFL.N", "TRAN.N", 
+            "MAL.N", "MAL.X", "SFIN.N", "ALLI.N", "ALUM.N", "VPEL.N", "JETS.N", "PARQ.N",
+            "CINV.N", "ASHO.N", "NHL.N", "AGPL.N", "SERV.N", "GHLL.N", "LGIL.N", "BFN.N", 
+            "SHOT.N", "SHOT.X", "AGAL.N", "RCH.N", "CALF.N", "NEH.N", "SHL.N", "UBF.N", 
+            "HARI.N", "CBNK.N", "DOCK.N", "CHOT.N", "EAST.N", "CLND.N", "BOGA.N", "LVEF.N", 
+            "TPL.N", "SDB.N", "PINS.N", "TAJ.N", "AAF.N", "AAF.P", "MERC.N", "CHL.N", 
+            "CHL.X", "AMF.N", "RWSL.N", "COOP.N", "TYRE.N", "BOPL.N", "CSLK.N", "COLO.N",
+            "HPL.N", "AMSL.N", "SMOT.N", "APLA.N", "KVAL.N", "PMB.N", "ODEL.N", "MASK.N", 
+            "BFL.N", "BPPL.N", "LCBF.N", "RHL.N", "RHL.X", "ABAN.N", "RENU.N", "ASCO.N", 
+            "LPL.N", "LPL.X", "CIND.N", "SOY.N", "SCAP.N", "LCEY.N", "SEMB.N", "SEMB.X", 
+            "HELA.N", "CRL.N", "CARE.N", "JKL.N", "AFSL.N", "PACK.N", "BALA.N", "MBSL.N", 
+            "LDEV.N", "HUNT.N", "ATL.N", "CONN.N", "LVEN.N", "SDF.N", "ONAL.N", "SHAW.N",
+            "CWM.N", "AGST.N", "AGST.X", "RAL.N", "COCO.N", "COCO.X", "KFP.N", "PHAR.N", 
+            "STAF.N", "REXP.N", "LHL.N", "RPBH.N", "CSD.N", "HPWR.N", "RHTL.N", "SINH.N", 
+            "LALU.N", "UDPL.N", "BBH.N", "KGAL.N", "HAPU.N", "HBS.N", "KZOO.N", "KOTA.N", 
+            "LITE.N", "DPL.N", "CABO.N", "CTLD.N", "CHMX.N", "MARA.N", "TANG.N", "COMD.N", 
+            "REEF.N", "HDFC.N", "BERU.N", "CIT.N", "CFI.N", "WAPO.N", "ETWO.N", "ASIY.N",
+            "ATLL.N", "AINS.N", "KAHA.N", "MADU.N", "HEXP.N", "SWAD.N", "HSIG.N", "PEG.N", 
+            "CITW.N", "CITH.N", "AUTO.N", "ECL.N", "LUMX.N", "MCPL.N", "UCAR.N", "HPFL.N", 
+            "HOPL.N", "TSML.N", "MSL.N", "MFPE.N", "CTBL.N", "ASPH.N", "SIL.N", "BRR.N", 
+            "KPHL.N", "EMER.N", "SIGV.N", "TESS.N", "TESS.X", "MRH.N", "CERA.N", "AFS.N", 
+            "MHDL.N", "RFL.N", "LPRT.N", "HVA.N", "CSF.N", "MDL.N", "SLND.N", "ACME.N",
+            "ACAP.N", "MULL.N", "GEST.N", "MEL.N", "EXT.N", "EML.N", "CWL.N", "SING.N", 
+            "BLUE.N", "CPRT.N", "RGEM.N", "YORK.N", "OFEQ.N", "PARA.N"
         ];
 
         // Utility functions
@@ -291,11 +254,11 @@
             ).slice(0, 10); // Limit to 10 suggestions
         }
 
-        // Normalize symbol to standard format (.N0000)
+        // Normalize symbol to standard format (.N0000) for storage compatibility
         function normalizeSymbol(symbol) {
             if (!symbol) return symbol;
             
-            // If it ends with .N, .X, or .P, add 0000
+            // Convert .N, .X, .P to .N0000, .X0000, .P0000 for storage
             if (symbol.match(/\.(N|X|P)$/)) {
                 return symbol + '0000';
             }
@@ -303,14 +266,6 @@
             // If it already has 0000, return as is
             if (symbol.match(/\.(N|X|P)0000$/)) {
                 return symbol;
-            }
-            
-            // If it has some other format, try to normalize
-            if (symbol.includes('.')) {
-                const parts = symbol.split('.');
-                if (parts.length === 2) {
-                    return parts[0] + '.' + parts[1] + '0000';
-                }
             }
             
             return symbol;
