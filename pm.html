@@ -289,6 +289,9 @@
                     <button id="portfolioManagementBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
                         📊 Portfolio Management
                     </button>
+                    <button id="stockCalculatorBtn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                        🧮 Stock Calculator
+                    </button>
                 </div>
             </div>
 
@@ -643,24 +646,19 @@
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-semibold text-gray-800">Daily Trading Journal</h3>
                         <div class="flex items-center space-x-3">
-                            <div class="flex items-center space-x-2">
-                                <label class="text-sm font-medium text-gray-700">Sort by:</label>
-                                <select id="tradingJournalSort" class="text-sm border border-gray-300 rounded-lg px-3 py-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                    <option value="date-asc">Date (Oldest First)</option>
-                                    <option value="date-desc">Date (Newest First)</option>
-                                    <option value="stock-asc">Stock A-Z</option>
-                                    <option value="stock-desc">Stock Z-A</option>
-                                    <option value="pnl-desc">P&L (Highest First)</option>
-                                    <option value="pnl-asc">P&L (Lowest First)</option>
-                                </select>
-                            </div>
+                            <button id="exportTradingJournalBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                                📊 Export
+                            </button>
+                            <button id="printTradingJournalBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                                🖨️ Print
+                            </button>
                             <button id="addManualTradeBtn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
                                 + Add Manual Trade
                             </button>
                         </div>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full border-separate border-spacing-0" style="min-width: 1200px;">
+                        <table id="tradingJournalTable" class="w-full border-separate border-spacing-0" style="min-width: 1200px;">
                             <thead>
                                 <tr class="bg-gray-50">
                                     <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 border-b">Date</th>
@@ -687,9 +685,19 @@
 
                 <!-- Portfolio Holdings Summary -->
                 <div id="portfolioHoldingsSummary" class="hidden mb-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Current Holdings Summary</h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Current Holdings Summary</h3>
+                        <div class="flex items-center space-x-3">
+                            <button id="exportHoldingsSummaryBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                                📊 Export
+                            </button>
+                            <button id="printHoldingsSummaryBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                                🖨️ Print
+                            </button>
+                        </div>
+                    </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full border-separate border-spacing-0" style="min-width: 800px;">
+                        <table id="holdingsSummaryTable" class="w-full border-separate border-spacing-0" style="min-width: 800px;">
                             <thead>
                                 <tr class="bg-gray-50">
                                     <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Symbol</th>
@@ -889,7 +897,17 @@
 
             <!-- Portfolio Table -->
             <div class="bg-white/95 backdrop-blur-sm mb-8 rounded-2xl p-6 shadow-2xl border border-white/20">
-                <h3 class="text-center text-gray-700 mb-8 text-xl font-semibold">Portfolio Details</h3>
+                <div class="flex justify-between items-center mb-8">
+                    <h3 class="text-center text-gray-700 text-xl font-semibold">Portfolio Details</h3>
+                    <div class="flex items-center space-x-3">
+                        <button id="exportPortfolioTableBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                            📊 Export
+                        </button>
+                        <button id="printPortfolioTableBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                            🖨️ Print
+                        </button>
+                    </div>
+                </div>
                 <div class="overflow-x-auto" style="max-width: 100%;">
                     <table id="portfolioTable" class="w-full border-separate border-spacing-0" style="min-width: 800px;margin-left: 0px;">
                         <thead>
@@ -942,7 +960,17 @@
 
             <!-- Comparison Table (Hidden by default) -->
             <div id="comparisonTable" class="hidden bg-white/95 mb-8 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-white/20">
-                <h3 class="text-center text-gray-700 mb-8 text-xl font-semibold">Portfolio Comparison - Changes Over Time</h3>
+                <div class="flex justify-between items-center mb-8">
+                    <h3 class="text-center text-gray-700 text-xl font-semibold">Portfolio Comparison - Changes Over Time</h3>
+                    <div class="flex items-center space-x-3">
+                        <button id="exportComparisonTableBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                            📊 Export
+                        </button>
+                        <button id="printComparisonTableBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                            🖨️ Print
+                        </button>
+                    </div>
+                </div>
                 <div class="overflow-x-auto">
                     <table id="comparisonDataTable" class="w-full">
                         <thead>
@@ -968,6 +996,14 @@
         <div id="targetPriceSection" class="hidden bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-white/20 mb-8">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-900">🎯 Target Price Management</h2>
+                    <div class="flex items-center space-x-3">
+                        <button id="exportTargetPriceBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                            📊 Export
+                        </button>
+                        <button id="printTargetPriceBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                            🖨️ Print
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -982,7 +1018,7 @@
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="w-full border-separate border-spacing-0" style="min-width: 1000px;">
+                    <table id="targetPriceTable" class="w-full border-separate border-spacing-0" style="min-width: 1000px;">
                         <thead>
                             <tr class="bg-gray-50">
                                 <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 border-b">Stock</th>
@@ -1068,9 +1104,86 @@
         .dataTables_wrapper .dataTables_paginate {
             color: #333;
         }
+
+        /* Make table headers clearly sortable */
+        .dataTables_wrapper th.sorting,
+        .dataTables_wrapper th.sorting_asc,
+        .dataTables_wrapper th.sorting_desc {
+            cursor: pointer !important;
+            position: relative;
+            user-select: none;
+        }
+
+        .dataTables_wrapper th.sorting:hover,
+        .dataTables_wrapper th.sorting_asc:hover,
+        .dataTables_wrapper th.sorting_desc:hover {
+            background-color: #f3f4f6 !important;
+        }
+
+        .dataTables_wrapper th.sorting:after,
+        .dataTables_wrapper th.sorting_asc:after,
+        .dataTables_wrapper th.sorting_desc:after {
+            content: '';
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+        }
+
+        .dataTables_wrapper th.sorting:after {
+            border-top: 4px solid #999;
+            border-bottom: none;
+        }
+
+        .dataTables_wrapper th.sorting_asc:after {
+            border-bottom: 4px solid #333;
+            border-top: none;
+        }
+
+        .dataTables_wrapper th.sorting_desc:after {
+            border-top: 4px solid #333;
+            border-bottom: none;
+        }
+
+        /* Ensure table headers are clickable */
+        #tradingJournalTable th {
+            cursor: pointer !important;
+            user-select: none;
+        }
+
+        #tradingJournalTable th:hover {
+            background-color: #f3f4f6 !important;
+        }
     </style>
 
     <script>
+        // Utility functions for number formatting
+        function formatNumber(number, decimals = 2) {
+            if (number === null || number === undefined || isNaN(number)) return '0';
+            return new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            }).format(number);
+        }
+
+        function formatInteger(number) {
+            if (number === null || number === undefined || isNaN(number)) return '0';
+            return new Intl.NumberFormat('en-US').format(Math.round(number));
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'LKR',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(amount);
+        }
+
         // Global variables
         let portfolioData = [];
         let sectorMapping = {};
@@ -1525,7 +1638,7 @@
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${portfolio.holdings.length}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">Rs. ${formatNumber(totalValue)}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm ${totalPnL >= 0 ? 'text-green-600' : 'text-red-600'}">Rs. ${formatNumber(totalPnL)}</td>
-                <td class="px-4 py-3 whitespace-nowrap text-sm ${totalReturn >= 0 ? 'text-green-600' : 'text-red-600'}">${totalReturn.toFixed(2)}%</td>
+                <td class="px-4 py-3 whitespace-nowrap text-sm ${totalReturn >= 0 ? 'text-green-600' : 'text-red-600'}">${formatNumber(totalReturn, 2)}%</td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
                     <div class="flex space-x-2">
                         <button onclick="viewPortfolio('${portfolio.id}')" class="text-blue-600 hover:text-blue-900">View</button>
@@ -1589,7 +1702,7 @@
                             </div>
                             <div class="text-center">
                                 <p class="text-sm text-gray-500">Return %</p>
-                                <p class="text-lg font-semibold ${totalReturn >= 0 ? 'text-green-600' : 'text-red-600'}">${totalReturn.toFixed(2)}%</p>
+                                <p class="text-lg font-semibold ${totalReturn >= 0 ? 'text-green-600' : 'text-red-600'}">${formatNumber(totalReturn, 2)}%</p>
                             </div>
                         </div>
                         
@@ -1721,6 +1834,14 @@
             const portfolioManagementBtn = document.getElementById('portfolioManagementBtn');
             if (portfolioManagementBtn) {
                 portfolioManagementBtn.addEventListener('click', showPortfolioManagement);
+            }
+            
+            // Stock Calculator button
+            const stockCalculatorBtn = document.getElementById('stockCalculatorBtn');
+            if (stockCalculatorBtn) {
+                stockCalculatorBtn.addEventListener('click', function() {
+                    window.open('stock-calculator.html', '_blank');
+                });
             }
             
             // Back to Upload button
@@ -1965,6 +2086,77 @@
             }
         } catch (error) {
             console.error('Error setting up upload modal:', error);
+        }
+
+        // Export and Print button event listeners
+        const exportTradingJournalBtn = document.getElementById('exportTradingJournalBtn');
+        if (exportTradingJournalBtn) {
+            exportTradingJournalBtn.addEventListener('click', () => {
+                exportTableToCSV('tradingJournalTable', 'trading_journal.csv');
+            });
+        }
+
+        const printTradingJournalBtn = document.getElementById('printTradingJournalBtn');
+        if (printTradingJournalBtn) {
+            printTradingJournalBtn.addEventListener('click', () => {
+                printTable('tradingJournalTable', 'Daily Trading Journal');
+            });
+        }
+
+        const exportHoldingsSummaryBtn = document.getElementById('exportHoldingsSummaryBtn');
+        if (exportHoldingsSummaryBtn) {
+            exportHoldingsSummaryBtn.addEventListener('click', () => {
+                exportTableToCSV('holdingsSummaryTable', 'holdings_summary.csv');
+            });
+        }
+
+        const printHoldingsSummaryBtn = document.getElementById('printHoldingsSummaryBtn');
+        if (printHoldingsSummaryBtn) {
+            printHoldingsSummaryBtn.addEventListener('click', () => {
+                printTable('holdingsSummaryTable', 'Current Holdings Summary');
+            });
+        }
+
+        const exportPortfolioTableBtn = document.getElementById('exportPortfolioTableBtn');
+        if (exportPortfolioTableBtn) {
+            exportPortfolioTableBtn.addEventListener('click', () => {
+                exportTableToCSV('portfolioTable', 'portfolio_details.csv');
+            });
+        }
+
+        const printPortfolioTableBtn = document.getElementById('printPortfolioTableBtn');
+        if (printPortfolioTableBtn) {
+            printPortfolioTableBtn.addEventListener('click', () => {
+                printTable('portfolioTable', 'Portfolio Details');
+            });
+        }
+
+        const exportTargetPriceBtn = document.getElementById('exportTargetPriceBtn');
+        if (exportTargetPriceBtn) {
+            exportTargetPriceBtn.addEventListener('click', () => {
+                exportTableToCSV('targetPriceTable', 'target_price_management.csv');
+            });
+        }
+
+        const printTargetPriceBtn = document.getElementById('printTargetPriceBtn');
+        if (printTargetPriceBtn) {
+            printTargetPriceBtn.addEventListener('click', () => {
+                printTable('targetPriceTable', 'Target Price Management');
+            });
+        }
+
+        const exportComparisonTableBtn = document.getElementById('exportComparisonTableBtn');
+        if (exportComparisonTableBtn) {
+            exportComparisonTableBtn.addEventListener('click', () => {
+                exportTableToCSV('comparisonDataTable', 'portfolio_comparison.csv');
+            });
+        }
+
+        const printComparisonTableBtn = document.getElementById('printComparisonTableBtn');
+        if (printComparisonTableBtn) {
+            printComparisonTableBtn.addEventListener('click', () => {
+                printTable('comparisonDataTable', 'Portfolio Comparison');
+            });
         }
 
 
@@ -2754,14 +2946,20 @@
             
             // Format with standard thousand separators
             if (absNum >= 1000000) {
-                return (isNegative ? '-' : '') + (absNum / 1000000).toFixed(2) + 'M';
+                return (isNegative ? '-' : '') + new Intl.NumberFormat('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }).format(absNum / 1000000) + 'M';
             } else if (absNum >= 1000) {
                 return (isNegative ? '-' : '') + absNum.toLocaleString('en-US', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
                 });
             } else {
-                return (isNegative ? '-' : '') + absNum.toFixed(2);
+                return (isNegative ? '-' : '') + new Intl.NumberFormat('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }).format(absNum);
             }
         }
 
@@ -2811,9 +3009,9 @@
                 
                 // Update comparison cards
                 document.getElementById('valueChange').textContent = 'Rs. ' + formatNumber(valueChange);
-                document.getElementById('valueChangePercent').textContent = valueChangePercent.toFixed(2) + '%';
+                document.getElementById('valueChangePercent').textContent = formatNumber(valueChangePercent, 2) + '%';
                 document.getElementById('pnlChange').textContent = 'Rs. ' + formatNumber(pnlChange);
-                document.getElementById('pnlChangePercent').textContent = pnlChangePercent.toFixed(2) + '%';
+                document.getElementById('pnlChangePercent').textContent = formatNumber(pnlChangePercent, 2) + '%';
                 document.getElementById('newSecurities').textContent = newSecurities;
                 document.getElementById('removedSecurities').textContent = removedSecurities;
                 
@@ -2938,7 +3136,7 @@
                             ${item.pnlChange >= 0 ? '+' : ''}Rs. ${formatNumber(item.pnlChange)}
                         </td>
                         <td class="px-4 py-2 text-right ${item.returnChange >= 0 ? 'text-green-600' : 'text-red-600'}" data-order="${item.returnChange}">
-                            ${item.returnChange >= 0 ? '+' : ''}${item.returnChange.toFixed(2)}%
+                            ${item.returnChange >= 0 ? '+' : ''}${formatNumber(item.returnChange, 2)}%
                         </td>
                         <td class="px-4 py-2 text-center">${item.sector}</td>
                     `;
@@ -2985,7 +3183,7 @@
             document.getElementById('totalMarketValue').textContent = 'Rs. ' + formatNumber(totalValue);
             document.getElementById('totalCost').textContent = 'Rs. ' + formatNumber(totalCost);
             document.getElementById('totalPnL').textContent = 'Rs. ' + formatNumber(totalPnL);
-            document.getElementById('totalReturn').textContent = totalReturn.toFixed(2) + '%';
+            document.getElementById('totalReturn').textContent = formatNumber(totalReturn, 2) + '%';
 
             // Update colors based on P&L
             const pnlElement = document.getElementById('totalPnL');
@@ -3045,7 +3243,7 @@
                                         if (data.labels.length && data.datasets.length) {
                                             return data.labels.map((label, i) => {
                                                 const value = data.datasets[0].data[i];
-                                                const percentage = ((value / dataToUse.reduce((sum, item) => sum + (item.marketValue || 0), 0)) * 100).toFixed(1);
+                                                const percentage = formatNumber((value / dataToUse.reduce((sum, item) => sum + (item.marketValue || 0), 0)) * 100, 1);
                                                 return {
                                                     text: `${label}: ${percentage}%`,
                                                     fillStyle: data.datasets[0].backgroundColor[i],
@@ -3112,7 +3310,7 @@
                                 beginAtZero: true,
                                 ticks: {
                                     callback: function(value) {
-                                        return 'Rs. ' + (value / 1000).toFixed(0) + 'K';
+                                        return 'Rs. ' + formatInteger(value / 1000) + 'K';
                                     }
                                 }
                             }
@@ -3127,7 +3325,7 @@
                                         const item = top15[context.dataIndex];
                                         return [
                                             `P&L: Rs. ${formatNumber(item.unrealizedPnL || 0)}`,
-                                            `Return: ${(item.returnPercent || 0).toFixed(2)}%`
+                                            `Return: ${formatNumber(item.returnPercent || 0, 2)}%`
                                         ];
                                     }
                                 }
@@ -3214,7 +3412,7 @@
                                         if (data.labels.length && data.datasets.length) {
                                             return data.labels.map((label, i) => {
                                                 const value = data.datasets[0].data[i];
-                                                const percentage = ((value / dataToUse.reduce((sum, item) => sum + (item.marketValue || 0), 0)) * 100).toFixed(1);
+                                                const percentage = formatNumber((value / dataToUse.reduce((sum, item) => sum + (item.marketValue || 0), 0)) * 100, 1);
                                                 return {
                                                     text: `${label}: ${percentage}%`,
                                                     fillStyle: data.datasets[0].backgroundColor[i],
@@ -3313,7 +3511,7 @@
                                 beginAtZero: true,
                                 ticks: {
                                     callback: function(value) {
-                                        return 'Rs. ' + (value / 1000).toFixed(0) + 'K';
+                                        return 'Rs. ' + formatInteger(value / 1000) + 'K';
                                     }
                                 }
                             }
@@ -3378,12 +3576,12 @@
                     const pnlPercentColor = returnPercent >= 0 ? 'text-green-600' : 'text-red-600';
                     
                     row.innerHTML = `
-                        <td class="px-4 py-2 text-center text-xs border-r">${new Date().toLocaleDateString()}</td>
+                        <td class="px-4 py-2 text-center text-xs border-r whitespace-nowrap">${new Date().toLocaleDateString()}</td>
                         <td class="px-4 py-2 text-left text-xs font-medium border-r">${item.security}</td>
                         <td class="px-4 py-2 text-right text-xs border-r">${quantity.toLocaleString()}</td>
-                        <td class="px-4 py-2 text-right text-xs border-r">Rs. ${avgPrice.toFixed(2)}</td>
-                        <td class="px-4 py-2 text-right text-xs border-r">Rs. ${stopLoss.toFixed(2)}</td>
-                        <td class="px-4 py-2 text-right text-xs border-r">Rs. ${takeProfit.toFixed(2)}</td>
+                        <td class="px-4 py-2 text-right text-xs border-r">Rs. ${formatNumber(avgPrice, 2)}</td>
+                        <td class="px-4 py-2 text-right text-xs border-r">Rs. ${formatNumber(stopLoss, 2)}</td>
+                        <td class="px-4 py-2 text-right text-xs border-r">Rs. ${formatNumber(takeProfit, 2)}</td>
                         <td class="px-4 py-2 text-center text-xs border-r"></td>
                         <td class="px-4 py-2 text-center text-xs border-r">${soldDate}</td>
                         <td class="px-4 py-2 text-center text-xs border-r">${duration}</td>
@@ -3453,29 +3651,29 @@
                         <td class="px-3 py-2 text-left" data-order="${item.security}">
                             <div class="flex flex-col">
                                 <div class="text-sm font-bold text-gray-900">${item.security}</div>
-                                <div class="text-xs text-gray-600">Rs. ${avgPrice.toFixed(2)}</div>
+                                <div class="text-xs text-gray-600">Rs. ${formatNumber(avgPrice, 2)}</div>
                             </div>
                         </td>
                         <td class="px-3 py-2 text-right" data-order="${quantity}">
-                            <div class="text-sm font-bold text-gray-900">${quantity.toFixed(0)}</div>
+                            <div class="text-sm font-bold text-gray-900">${formatInteger(quantity)}</div>
                         </td>
                         <td class="px-3 py-2 text-right" data-order="${marketValue}">
                             <div class="flex flex-col">
                                 <div class="text-sm font-bold text-gray-900">Rs. ${formatNumber(marketValue)}</div>
-                                <div class="text-xs text-gray-600">Rs. ${lastPrice.toFixed(2)}</div>
+                                <div class="text-xs text-gray-600">Rs. ${formatNumber(lastPrice, 2)}</div>
                             </div>
                         </td>
                         <td class="px-3 py-2 text-right" data-order="${unrealizedPnL}">
                             <div class="flex flex-col">
                                 <div class="text-sm font-bold ${unrealizedPnL >= 0 ? 'text-green-600' : 'text-red-600'}">Rs. ${formatNumber(unrealizedPnL)}</div>
-                                <div class="text-xs ${returnPercent >= 0 ? 'text-green-600' : 'text-red-600'}">${returnPercent.toFixed(2)}%</div>
+                                <div class="text-xs ${returnPercent >= 0 ? 'text-green-600' : 'text-red-600'}">${formatNumber(returnPercent, 2)}%</div>
                             </div>
                         </td>
                         <td class="px-3 py-2 text-center" data-order="${item.sector || 'Unknown'}">
                             <div class="text-xs text-gray-700">${item.sector || 'Unknown'}</div>
                         </td>
                         <td class="px-3 py-2 text-center" data-order="${portfolioPercentage}">
-                            <div class="text-xs font-medium text-gray-700">${portfolioPercentage.toFixed(2)}%</div>
+                            <div class="text-xs font-medium text-gray-700">${formatNumber(portfolioPercentage, 2)}%</div>
                         </td>
                     `;
                     
@@ -5217,11 +5415,6 @@
             tradeTypeSelect.addEventListener('change', toggleSellFields);
         }
 
-        // Trading journal sort dropdown
-        const tradingJournalSort = document.getElementById('tradingJournalSort');
-        if (tradingJournalSort) {
-            tradingJournalSort.addEventListener('change', sortTradingJournal);
-        }
 
 
 
@@ -6359,36 +6552,8 @@
             tbody.innerHTML = '';
 
 
-            // Get current sort option
-            const sortSelect = document.getElementById('tradingJournalSort');
-            const sortOption = sortSelect ? sortSelect.value : 'date-asc';
-
-            // Sort trades based on selected option
-            const sortedTrades = allTrades
-                .filter(trade => {
-                    // Show all trades regardless of amount - BUY trades with 0 amount are completed purchases
-                    return true; // Show all trades
-                })
-                .sort((a, b) => {
-                    switch (sortOption) {
-                        case 'date-asc':
-                            return new Date(a.date) - new Date(b.date);
-                        case 'date-desc':
-                            return new Date(b.date) - new Date(a.date);
-                        case 'stock-asc':
-                            return a.stock.localeCompare(b.stock);
-                        case 'stock-desc':
-                            return b.stock.localeCompare(a.stock);
-                        case 'pnl-desc':
-                            return (b.pnl || 0) - (a.pnl || 0);
-                        case 'pnl-asc':
-                            return (a.pnl || 0) - (b.pnl || 0);
-                        default:
-                            return new Date(a.date) - new Date(b.date);
-                    }
-                });
-
-            sortedTrades.forEach(trade => {
+            // Display all trades - DataTable will handle sorting
+            allTrades.forEach(trade => {
                 const row = document.createElement('tr');
                 row.className = 'border-b hover:bg-gray-50';
                 row.dataset.tradeId = trade.id;
@@ -6408,20 +6573,20 @@
                 
                 
                 row.innerHTML = `
-                    <td class="px-3 py-2 text-xs text-gray-900">${trade.date}</td>
+                    <td class="px-3 py-2 text-xs text-gray-900 whitespace-nowrap">${trade.date}</td>
                     <td class="px-3 py-2 text-xs font-medium text-gray-900">${trade.stock}</td>
-                    <td class="px-3 py-2 text-xs text-gray-600 text-right">${displayAmount.toFixed(0)}</td>
-                    <td class="px-3 py-2 text-xs text-gray-600 text-right">Rs. ${trade.avePrice.toFixed(2)}</td>
-                    <td class="px-3 py-2 text-xs text-gray-600 text-right">Rs. ${marketValue.toFixed(2)}</td>
+                    <td class="px-3 py-2 text-xs text-gray-600 text-right">${formatInteger(displayAmount)}</td>
+                    <td class="px-3 py-2 text-xs text-gray-600 text-right">Rs. ${formatNumber(trade.avePrice, 2)}</td>
+                    <td class="px-3 py-2 text-xs text-gray-600 text-right">Rs. ${formatNumber(marketValue, 2)}</td>
                     <td class="px-3 py-2 text-center">
                         <span class="px-2 py-1 text-xs font-medium rounded-full ${typeClass}">${trade.type}</span>
                     </td>
-                    <td class="px-3 py-2 text-xs text-gray-900">${trade.soldDate || '-'}</td>
+                    <td class="px-3 py-2 text-xs text-gray-900 whitespace-nowrap">${trade.soldDate || '-'}</td>
                     <td class="px-3 py-2 text-xs text-gray-600 text-right">${trade.duration > 0 ? trade.duration + 'd' : '-'}</td>
-                    <td class="px-3 py-2 text-xs text-gray-600 text-right">${trade.soldPrice > 0 ? 'Rs. ' + trade.soldPrice.toFixed(2) : '-'}</td>
-                    <td class="px-3 py-2 text-xs text-gray-600 text-right">${trade.sellOrderValue > 0 ? 'Rs. ' + trade.sellOrderValue.toFixed(2) : '-'}</td>
-                    <td class="px-3 py-2 text-xs font-medium text-right ${pnlClass}">${trade.pnl !== undefined && trade.pnl !== 0 ? 'Rs. ' + trade.pnl.toFixed(2) : '-'}</td>
-                    <td class="px-3 py-2 text-xs font-medium text-right ${pnlPercentClass}">${trade.pnlPercent !== undefined && trade.pnlPercent !== 0 ? trade.pnlPercent.toFixed(2) + '%' : '-'}</td>
+                    <td class="px-3 py-2 text-xs text-gray-600 text-right">${trade.soldPrice > 0 ? 'Rs. ' + formatNumber(trade.soldPrice, 2) : '-'}</td>
+                    <td class="px-3 py-2 text-xs text-gray-600 text-right">${trade.sellOrderValue > 0 ? 'Rs. ' + formatNumber(trade.sellOrderValue, 2) : '-'}</td>
+                    <td class="px-3 py-2 text-xs font-medium text-right ${pnlClass}">${trade.pnl !== undefined && trade.pnl !== 0 ? 'Rs. ' + formatNumber(trade.pnl, 2) : '-'}</td>
+                    <td class="px-3 py-2 text-xs font-medium text-right ${pnlPercentClass}">${trade.pnlPercent !== undefined && trade.pnlPercent !== 0 ? formatNumber(trade.pnlPercent, 2) + '%' : '-'}</td>
                     <td class="px-3 py-2 text-center">
                         <button onclick="editTrade('${trade.id}')" class="text-blue-600 hover:text-blue-800 text-xs mr-2">Edit</button>
                         <button onclick="deleteTrade('${trade.id}')" class="text-red-600 hover:text-red-800 text-xs">Delete</button>
@@ -6432,20 +6597,25 @@
             });
             
             
-            // Reinitialize DataTable after updating the table
-            initializeTradingJournalDataTable();
+            // Reinitialize DataTable after updating the table with a small delay
+            setTimeout(() => {
+                initializeTradingJournalDataTable();
+            }, 100);
             
             // Reset the generation flag
             isGenerating = false;
         }
 
-        function sortTradingJournal() {
-            displayTrades();
-        }
         
 
         function initializeTradingJournalDataTable() {
-            const tradingJournalTable = document.querySelector('#tradingJournalContainer table');
+            // Check if jQuery and DataTables are available
+            if (typeof $ === 'undefined' || typeof $.fn.DataTable === 'undefined') {
+                console.error('jQuery or DataTables not loaded');
+                return;
+            }
+            
+            const tradingJournalTable = document.getElementById('tradingJournalTable');
             if (tradingJournalTable) {
                 // Check if table has data rows before initializing DataTable
                 const tbody = tradingJournalTable.querySelector('tbody');
@@ -6457,114 +6627,202 @@
                 
                 // Only initialize DataTable if there's data
                 if (hasData) {
-                    $(tradingJournalTable).DataTable({
-                        pageLength: 50,
-                        lengthMenu: [[25, 50, 100, 200, -1], [25, 50, 100, 200, "All"]],
-                        order: [[0, 'desc']], // Sort by date descending
-                        responsive: true,
-                        processing: false,
-                        searching: true,
-                        ordering: true,
-                        info: true,
-                        paging: true,
-                        scrollX: true,
-                        scrollCollapse: true,
-                        columnDefs: [
-                            { type: 'date', targets: [0, 7] }, // Date columns (Date, Sold Date)
-                            { type: 'num', targets: [2, 3, 4, 5, 8, 9, 10, 11] }, // Numeric columns (Amount, Ave Price, SL, TP, Duration, Sold Price, Sell Value, P&L, P&L%)
-                            { type: 'string', targets: [1, 6, 12] }, // String columns (Stock, Type, Actions)
-                            { className: 'text-center', targets: [6, 12] }, // Center align (Type, Actions)
-                            { className: 'text-right', targets: [2, 3, 4, 5, 8, 9, 10, 11] }, // Right align numeric columns
-                            { className: 'text-left', targets: [0, 1, 7] } // Left align (Date, Stock, Sold Date)
-                        ]
-                    });
+                    try {
+                        $(tradingJournalTable).DataTable({
+                            pageLength: 50,
+                            lengthMenu: [[25, 50, 100, 200, -1], [25, 50, 100, 200, "All"]],
+                            order: [[0, 'desc']], // Sort by date descending
+                            responsive: true,
+                            processing: false,
+                            searching: true,
+                            ordering: true,
+                            info: true,
+                            paging: true,
+                            scrollX: true,
+                            scrollCollapse: true,
+                            columnDefs: [
+                                { type: 'date', targets: [0, 6] }, // Date columns (Date, Sold Date)
+                                { type: 'num', targets: [2, 3, 4, 7, 8, 9, 10, 11] }, // Numeric columns (Amount, Ave Price, Market Value, Duration, Sold Price, Sell Value, P&L, P&L%)
+                                { type: 'string', targets: [1, 5, 12] }, // String columns (Stock, Type, Actions)
+                                { className: 'text-center', targets: [5, 12] }, // Center align (Type, Actions)
+                                { className: 'text-right', targets: [2, 3, 4, 7, 8, 9, 10, 11] }, // Right align numeric columns
+                                { className: 'text-left', targets: [0, 1, 6] }, // Left align (Date, Stock, Sold Date)
+                                { orderable: true, targets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] }, // All columns sortable except Actions
+                                { orderable: false, targets: [12] } // Actions column not sortable
+                            ],
+                            language: {
+                                search: "Search:",
+                                lengthMenu: "Show _MENU_ entries",
+                                info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                                paginate: {
+                                    first: "First",
+                                    last: "Last",
+                                    next: "Next",
+                                    previous: "Previous"
+                                }
+                            }
+                        });
+                        console.log('DataTable initialized successfully');
+                    } catch (error) {
+                        console.error('Error initializing DataTable:', error);
+                    }
+                } else {
+                    console.log('No data to initialize DataTable');
                 }
             }
+        }
+
+        // Export and Print Functions
+        function exportTableToCSV(tableId, filename) {
+            const table = document.getElementById(tableId);
+            if (!table) return;
+            
+            let csv = [];
+            const rows = table.querySelectorAll('tr');
+            
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const cols = row.querySelectorAll('td, th');
+                let rowData = [];
+                
+                for (let j = 0; j < cols.length; j++) {
+                    let cellText = cols[j].innerText || cols[j].textContent || '';
+                    // Clean up the text and remove extra whitespace
+                    cellText = cellText.replace(/\s+/g, ' ').trim();
+                    // Escape quotes and wrap in quotes if contains comma
+                    if (cellText.includes(',') || cellText.includes('"') || cellText.includes('\n')) {
+                        cellText = '"' + cellText.replace(/"/g, '""') + '"';
+                    }
+                    rowData.push(cellText);
+                }
+                csv.push(rowData.join(','));
+            }
+            
+            const csvContent = csv.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function printTable(tableId, title) {
+            const table = document.getElementById(tableId);
+            if (!table) return;
+            
+            const printWindow = window.open('', '_blank');
+            const tableClone = table.cloneNode(true);
+            
+            // Remove action buttons from print version
+            const actionCols = tableClone.querySelectorAll('td:last-child, th:last-child');
+            actionCols.forEach(col => {
+                if (col.textContent.includes('Edit') || col.textContent.includes('Delete')) {
+                    col.remove();
+                }
+            });
+            
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>${title}</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; margin: 20px; }
+                            table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+                            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                            th { background-color: #f2f2f2; font-weight: bold; }
+                            .text-right { text-align: right; }
+                            .text-center { text-align: center; }
+                            .text-left { text-align: left; }
+                            h1 { color: #333; margin-bottom: 20px; }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>${title}</h1>
+                        ${tableClone.outerHTML}
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
         }
 
         function generateHoldingsSummary(portfolios) {
             const tbody = document.getElementById('holdingsSummaryTableBody');
             tbody.innerHTML = '';
 
-            // Get the latest portfolio for current holdings
+            // Get the latest portfolio for current holdings only
             const latestPortfolio = portfolios[portfolios.length - 1];
-            const holdingsMap = new Map();
             
-            // Create a map of current prices from the latest portfolio
-            const currentPrices = new Map();
-            if (latestPortfolio && latestPortfolio.holdings) {
-                latestPortfolio.holdings.forEach(holding => {
-                    const symbol = holding.symbol || holding.security;
-                    const lastPrice = parseFloat(holding.lastPrice) || 0;
-                    const marketValue = parseFloat(holding.marketValue) || 0;
-                    const quantity = parseFloat(holding.quantity) || 0;
-                    
-                    // Use lastPrice if available, otherwise calculate from marketValue/quantity
-                    const currentPrice = lastPrice > 0 ? lastPrice : (quantity > 0 ? marketValue / quantity : 0);
-                    currentPrices.set(symbol, currentPrice);
-                });
+            if (!latestPortfolio || !latestPortfolio.holdings) {
+                return;
             }
 
-            // Aggregate holdings across all portfolios
-            portfolios.forEach(portfolio => {
-                if (portfolio.holdings) {
-                    portfolio.holdings.forEach(holding => {
-                        const symbol = holding.symbol || holding.security;
-                        const quantity = parseFloat(holding.quantity) || 0;
-                        const avgCost = parseFloat(holding.avgPrice || holding.avgCost) || 0;
-                        const lastPrice = parseFloat(holding.lastPrice) || 0;
-
-                        if (holdingsMap.has(symbol)) {
-                            const existing = holdingsMap.get(symbol);
-                            // Calculate weighted average cost
-                            const totalQuantity = existing.quantity + quantity;
-                            const totalCost = (existing.quantity * existing.avgCost) + (quantity * avgCost);
-                            existing.avgCost = totalQuantity > 0 ? totalCost / totalQuantity : existing.avgCost;
-                            existing.quantity = totalQuantity;
-                            existing.lastPrice = lastPrice; // Use latest price
-                            
-                        } else {
-                            holdingsMap.set(symbol, {
-                                quantity: quantity,
-                                avgCost: avgCost,
-                                lastPrice: lastPrice
-                            });
-                            
-                        }
-                    });
-                }
+            // Display current holdings from latest portfolio only
+            latestPortfolio.holdings.forEach(holding => {
+                const symbol = holding.symbol || holding.security;
+                const quantity = parseFloat(holding.quantity) || 0;
+                const avgCost = parseFloat(holding.avgPrice || holding.avgCost) || 0;
+                const lastPrice = parseFloat(holding.lastPrice) || 0;
+                const marketValue = parseFloat(holding.marketValue) || 0;
+                
+                // Calculate current price if not available
+                const currentPrice = lastPrice > 0 ? lastPrice : (quantity > 0 ? marketValue / quantity : 0);
+                
+                // Calculate unrealized P&L with 1.12% brokerage fee
+                const grossProceeds = marketValue;
+                const brokerFees = grossProceeds * 0.0112; // 1.12% broker fees
+                const netProceeds = grossProceeds - brokerFees;
+                const totalCost = quantity * avgCost;
+                const unrealizedPnL = netProceeds - totalCost;
+                
+                const row = document.createElement('tr');
+                row.className = 'border-b hover:bg-gray-50';
+                
+                const pnlClass = unrealizedPnL >= 0 ? 'text-green-600' : 'text-red-600';
+                
+                row.innerHTML = `
+                    <td class="px-4 py-3 text-sm font-medium text-gray-900">${symbol}</td>
+                    <td class="px-4 py-3 text-sm text-gray-600 text-right">${formatInteger(quantity)}</td>
+                    <td class="px-4 py-3 text-sm text-gray-600 text-right">Rs. ${formatNumber(avgCost, 2)}</td>
+                    <td class="px-4 py-3 text-sm text-gray-600 text-right">Rs. ${formatNumber(currentPrice, 2)}</td>
+                    <td class="px-4 py-3 text-sm text-gray-600 text-right">Rs. ${formatNumber(marketValue, 2)}</td>
+                    <td class="px-4 py-3 text-sm font-medium text-right ${pnlClass}">Rs. ${formatNumber(unrealizedPnL, 2)}</td>
+                `;
+                
+                tbody.appendChild(row);
             });
 
-            // Display current holdings
-            holdingsMap.forEach((holding, symbol) => {
-                if (holding.quantity > 0) {
-                    // Use current price from latest portfolio
-                    const currentPrice = currentPrices.get(symbol) || 0;
-                    const marketValue = holding.quantity * currentPrice;
-                    // Calculate unrealized P&L with 1.12% brokerage fee
-                    const grossProceeds = marketValue;
-                    const brokerFees = grossProceeds * 0.0112; // 1.12% broker fees
-                    const netProceeds = grossProceeds - brokerFees;
-                    const totalCost = holding.quantity * holding.avgCost;
-                    const unrealizedPnL = netProceeds - totalCost;
-                    
-                    const row = document.createElement('tr');
-                    row.className = 'border-b hover:bg-gray-50';
-                    
-                    const pnlClass = unrealizedPnL >= 0 ? 'text-green-600' : 'text-red-600';
-                    
-                    row.innerHTML = `
-                        <td class="px-4 py-3 text-sm font-medium text-gray-900">${symbol}</td>
-                        <td class="px-4 py-3 text-sm text-gray-600 text-right">${holding.quantity.toFixed(2)}</td>
-                        <td class="px-4 py-3 text-sm text-gray-600 text-right">Rs. ${holding.avgCost.toFixed(2)}</td>
-                        <td class="px-4 py-3 text-sm text-gray-600 text-right">Rs. ${currentPrice.toFixed(2)}</td>
-                        <td class="px-4 py-3 text-sm text-gray-600 text-right">Rs. ${marketValue.toFixed(2)}</td>
-                        <td class="px-4 py-3 text-sm font-medium text-right ${pnlClass}">Rs. ${unrealizedPnL.toFixed(2)}</td>
-                    `;
-                    
-                    tbody.appendChild(row);
+            // Initialize DataTable for holdings summary
+            const holdingsTable = document.querySelector('#portfolioHoldingsSummary table');
+            if (holdingsTable && $.fn.DataTable) {
+                if ($.fn.DataTable.isDataTable(holdingsTable)) {
+                    $(holdingsTable).DataTable().destroy();
                 }
-            });
+                
+                $(holdingsTable).DataTable({
+                    pageLength: 25,
+                    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                    order: [[4, 'desc']], // Sort by Market Value descending
+                    responsive: true,
+                    processing: false,
+                    searching: true,
+                    ordering: true,
+                    info: true,
+                    paging: true,
+                    scrollX: true,
+                    scrollCollapse: true,
+                    columnDefs: [
+                        { type: 'string', targets: [0] }, // Symbol
+                        { type: 'num', targets: [1, 2, 3, 4, 5] }, // Numeric columns (Qty, Avg Cost, Current Price, Market Value, P&L)
+                        { className: 'text-right', targets: [1, 2, 3, 4, 5] }, // Right align numeric columns
+                        { className: 'text-left', targets: [0] } // Left align Symbol
+                    ]
+                });
+            }
         }
 
         function analyzeTrades() {
@@ -6814,9 +7072,21 @@
                 return;
             }
 
-            console.log('Found holdings:', portfolio.holdings.length);
+            // Filter out holdings with 0 quantity
+            const validHoldings = portfolio.holdings.filter(holding => {
+                const quantity = parseFloat(holding.quantity) || 0;
+                return quantity > 0;
+            });
 
-            portfolio.holdings.forEach((holding, index) => {
+            console.log('Found holdings:', portfolio.holdings.length);
+            console.log('Valid holdings (quantity > 0):', validHoldings.length);
+
+            if (validHoldings.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" class="px-4 py-8 text-center text-gray-500">No holdings with quantity > 0 found</td></tr>';
+                return;
+            }
+
+            validHoldings.forEach((holding, index) => {
                 const symbol = holding.symbol || holding.security;
                 const quantity = parseFloat(holding.quantity) || 0;
                 const avgCost = parseFloat(holding.avgPrice || holding.avgCost) || 0;
