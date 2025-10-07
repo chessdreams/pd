@@ -313,10 +313,10 @@
                         </button>
                     </div>
                 
-                <!-- Portfolio Naming Section -->
+                <!-- Portfolio Details Section -->
                 <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <h3 class="text-lg font-semibold text-blue-900 mb-3">Portfolio Details</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label for="portfolioDate" class="block text-sm font-medium text-blue-800 mb-1">Portfolio Date *</label>
                             <input type="date" id="portfolioDate" required class="w-full p-2 border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
@@ -326,6 +326,11 @@
                             <label for="portfolioDescription" class="block text-sm font-medium text-blue-800 mb-1">Description (Optional)</label>
                             <input type="text" id="portfolioDescription" placeholder="e.g., End of month portfolio" class="w-full p-2 border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         </div>
+                        <div>
+                            <label for="cashBalance" class="block text-sm font-medium text-blue-800 mb-1">Cash Balance (Rs.) *</label>
+                            <input type="number" id="cashBalance" step="0.01" min="0" placeholder="0.00" required class="w-full p-2 border border-blue-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <p class="text-xs text-blue-600 mt-1">Enter your current cash balance</p>
+                        </div>
                     </div>
                 </div>
                 
@@ -334,12 +339,6 @@
                         <label for="csvFile" class="block text-sm font-medium text-gray-700 mb-2">Select Portfolio Files:</label>
                         <input type="file" id="csvFile" accept=".csv,.xlsx,.xls" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" multiple>
                         <p class="text-sm text-gray-500 mt-1">Supports CSV, Excel (.xlsx, .xls) files</p>
-                    </div>
-                    
-                    <div>
-                        <label for="cashBalance" class="block text-sm font-medium text-gray-700 mb-2">Cash Balance (Rs.):</label>
-                        <input type="number" id="cashBalance" step="0.01" min="0" placeholder="Enter cash balance" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <p class="text-sm text-gray-500 mt-1">Enter your current cash balance to see total portfolio value</p>
                     </div>
                     
                     <div class="flex space-x-4">
@@ -1480,6 +1479,16 @@
                 
                 // Since portfolio management is now the default page, load the portfolio list automatically
                 loadPortfolioList();
+                
+                // Add event listener for cash balance changes
+                const cashBalanceInput = document.getElementById('cashBalance');
+                if (cashBalanceInput) {
+                    cashBalanceInput.addEventListener('input', function() {
+                        if (portfolioData && portfolioData.length > 0) {
+                            calculateSummary();
+                        }
+                    });
+                }
             } catch (error) {
                 alert('Warning: Portfolio database could not be initialized. Some features may not work properly.');
             }
@@ -2394,6 +2403,7 @@
                                         // Show dashboard with comparison
                                 if (dashboardContent) {
                                     dashboardContent.classList.remove('hidden');
+                                    document.getElementById('portfolioManagementSection').classList.add('hidden');
                                             document.getElementById('uploadModal').classList.add('hidden');
                                             
                                             // Show comparison elements
@@ -2441,7 +2451,8 @@
                                             // Show dashboard with the portfolio
                                             if (dashboardContent) {
                                                 dashboardContent.classList.remove('hidden');
-                                    document.getElementById('uploadModal').classList.add('hidden');
+                                                document.getElementById('portfolioManagementSection').classList.add('hidden');
+                                                document.getElementById('uploadModal').classList.add('hidden');
                                                 const settingsButtonContainer = document.getElementById('settingsButtonContainer');
                                                 if (settingsButtonContainer) {
                                                     settingsButtonContainer.classList.remove('hidden');
