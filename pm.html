@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -2273,7 +2273,10 @@
                     }
                     
                     // Hide settings button if it was previously shown
-                    document.getElementById('settingsButtonContainer').classList.add('hidden');
+                    const settingsButtonContainer = document.getElementById('settingsButtonContainer');
+                    if (settingsButtonContainer) {
+                        settingsButtonContainer.classList.add('hidden');
+                    }
                     
                     // Clear file input AFTER storing the files
                     document.getElementById('csvFile').value = '';
@@ -2422,8 +2425,14 @@
                                             if (dashboardContent) {
                                                 dashboardContent.classList.remove('hidden');
                                     document.getElementById('uploadModal').classList.add('hidden');
-                                                document.getElementById('settingsButtonContainer').classList.remove('hidden');
-                                                document.getElementById('settingsBtn').textContent = '⚙️ Settings';
+                                                const settingsButtonContainer = document.getElementById('settingsButtonContainer');
+                                                if (settingsButtonContainer) {
+                                                    settingsButtonContainer.classList.remove('hidden');
+                                                }
+                                                const settingsBtn = document.getElementById('settingsBtn');
+                                                if (settingsBtn) {
+                                                    settingsBtn.textContent = '⚙️ Settings';
+                                                }
                                                 
                                                 // Refresh the dashboard
                                                 refreshDashboard();
@@ -2442,8 +2451,14 @@
                                         if (dashboardContent) {
                                             dashboardContent.classList.remove('hidden');
                                             document.getElementById('uploadModal').classList.add('hidden');
-                                    document.getElementById('settingsButtonContainer').classList.remove('hidden');
-                                    document.getElementById('settingsBtn').textContent = '⚙️ Settings';
+                                    const settingsButtonContainer = document.getElementById('settingsButtonContainer');
+                                    if (settingsButtonContainer) {
+                                        settingsButtonContainer.classList.remove('hidden');
+                                    }
+                                    const settingsBtn = document.getElementById('settingsBtn');
+                                    if (settingsBtn) {
+                                        settingsBtn.textContent = '⚙️ Settings';
+                                    }
                                     
                                     // Refresh the dashboard
                                     refreshDashboard();
