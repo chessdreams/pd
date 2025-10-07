@@ -2917,9 +2917,12 @@
                 initial.forEach(item => initialMap.set(item.security, item));
                 current.forEach(item => currentMap.set(item.security, item));
                 
-                // Calculate summary changes
+                // Get current cash balance from form
+                const currentCashBalance = parseFloat(document.getElementById('cashBalance').value) || 0;
+                
+                // Calculate summary changes (including cash balance)
                 const initialTotalValue = initial.reduce((sum, item) => sum + (item.marketValue || 0), 0);
-                const currentTotalValue = current.reduce((sum, item) => sum + (item.marketValue || 0), 0);
+                const currentTotalValue = current.reduce((sum, item) => sum + (item.marketValue || 0), 0) + currentCashBalance;
                 const initialTotalPnL = initial.reduce((sum, item) => sum + (item.unrealizedPnL || 0), 0);
                 const currentTotalPnL = current.reduce((sum, item) => sum + (item.unrealizedPnL || 0), 0);
                 
@@ -3086,6 +3089,27 @@
                     
                     tableBody.appendChild(row);
                 });
+                
+                // Add total portfolio value change row (including cash balance)
+                const currentCashBalance = parseFloat(document.getElementById('cashBalance').value) || 0;
+                const initialTotalValue = initial.reduce((sum, item) => sum + (item.marketValue || 0), 0);
+                const currentTotalValue = current.reduce((sum, item) => sum + (item.marketValue || 0), 0) + currentCashBalance;
+                const totalValueChange = currentTotalValue - initialTotalValue;
+                
+                const totalRow = document.createElement('tr');
+                totalRow.className = 'bg-blue-50 font-bold';
+                totalRow.innerHTML = `
+                    <td class="px-4 py-2 font-medium">TOTAL PORTFOLIO (Including Cash)</td>
+                    <td class="px-4 py-2 text-center text-blue-600 font-semibold">Summary</td>
+                    <td class="px-4 py-2 text-right">-</td>
+                    <td class="px-4 py-2 text-right ${totalValueChange >= 0 ? 'text-green-600' : 'text-red-600'}" data-order="${totalValueChange}">
+                        ${totalValueChange >= 0 ? '+' : ''}Rs. ${formatNumber(totalValueChange)}
+                    </td>
+                    <td class="px-4 py-2 text-right">-</td>
+                    <td class="px-4 py-2 text-right">-</td>
+                    <td class="px-4 py-2 text-center">-</td>
+                `;
+                tableBody.insertBefore(totalRow, tableBody.firstChild);
                 
                 // Initialize DataTable
                 const comparisonTable = document.getElementById('comparisonDataTable');
