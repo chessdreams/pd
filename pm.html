@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -2243,10 +2243,11 @@
         }
 
         // File upload handling
-        try {
-            const uploadBtn = document.getElementById('uploadBtn');
-            if (uploadBtn) {
-                uploadBtn.addEventListener('click', function() {
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                const uploadBtn = document.getElementById('uploadBtn');
+                if (uploadBtn) {
+                    uploadBtn.addEventListener('click', function() {
                     const fileInput = document.getElementById('csvFile');
                     const files = fileInput.files;
                     
@@ -2464,7 +2465,9 @@
                 });
             }
         } catch (error) {
+            console.error('Error setting up upload button:', error);
         }
+        });
         
         // Helper function to read file asynchronously
         function readFileAsync(file) {
